@@ -5,32 +5,34 @@ import { parseMinaSidorText } from '../utils/parser';
 
 const LandingPage = ({ onDataParsed }) => {
     const [text, setText] = useState('');
-    const [isShredding, setIsShredding] = useState(false);
+    const [parsedResult, setParsedResult] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const processText = (raw) => {
+        setIsProcessing(true);
+        setTimeout(() => {
+            const data = parseMinaSidorText(raw);
+            setParsedResult(data);
+            setIsProcessing(false);
+        }, 800);
+    };
 
     const handlePaste = (e) => {
         e.preventDefault();
         const pastedText = e.clipboardData.getData('text');
         setText(pastedText);
-
-        // Auto-process on paste
-        setIsShredding(true);
-
-        // Simulate "Shredding" / Processing delay for effect
-        setTimeout(() => {
-            const data = parseMinaSidorText(pastedText);
-            onDataParsed(data); // Callback to App to switch view
-            setIsShredding(false);
-        }, 1500); // 1.5s animation time
+        processText(pastedText);
     };
 
     const handleManualProcess = () => {
         if (!text) return;
-        setIsShredding(true);
-        setTimeout(() => {
-            const data = parseMinaSidorText(text);
-            onDataParsed(data);
-            setIsShredding(false);
-        }, 1200);
+        processText(text);
+    };
+
+    const handleContinue = () => {
+        if (parsedResult) {
+            onDataParsed(parsedResult);
+        }
     };
 
     return (
@@ -38,62 +40,59 @@ const LandingPage = ({ onDataParsed }) => {
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
                 Maximize Your Parental Benefit
             </h1>
-            <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '3rem' }}>
-                Paste your Försäkringskassan summary below to unlock hidden savings.
-            </p>
 
-            <Card className={isShredding ? 'shredding-animation' : ''}>
-                <textarea
-                    placeholder="Paste text from 'Mina Sidor' here..."
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onPaste={handlePaste}
-                    style={{
-                        width: '100%',
-                        height: '150px',
-                        border: '2px dashed var(--color-primary)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '1rem',
-                        resize: 'none',
-                        fontSize: '1rem',
-                        fontFamily: 'var(--font-mono)',
-                        backgroundColor: 'var(--color-bg)',
-                        outline: 'none',
-                        opacity: isShredding ? 0.5 : 1,
-                        transition: 'all 0.3s ease'
-                    }}
-                />
-                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button onClick={handleManualProcess} variant="action" disabled={!text || isShredding}>
-                        {isShredding ? 'Analyzing...' : 'Analyze Now'}
-                    </Button>
-                </div>
-            </Card>
+            {!parsedResult ? (
+                <>
+                    <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '3rem' }}>
+                        Paste your Försäkringskassan summary below.
+                    </p>
+                    <Card>
+                        <textarea
+                            placeholder="Paste text from 'Mina Sidor' anywhere here..."
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
+                            onPaste={handlePaste}
+                            style={{
+                                width: '100%',
+                                height: '150px',
+                                border: '2px dashed var(--color-primary)',
+                                borderRadius: 'var(--radius-md)',
+                                padding: '1rem',
+                                fontSize: '1rem',
+                                fontFamily: 'var(--font-mono)',
+                                backgroundColor: 'var(--color-bg)',
+                                outline: 'none',
+                                opacity: isProcessing ? 0.5 : 1
+                            }}
+                        />
+                        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button onClick={handleManualProcess} variant="action" disabled={!text || isProcessing}>
+                                {isProcessing ? 'Analyzing...' : 'Analyze'}
+                            </Button>
+                        </div>
+                    </Card>
+                </>
+            ) : (
+                <Card className="result-card">
+                    <h3 style={{ marginBottom: '1.5rem', color: 'var(--color-primary)' }}>We found your days!</h3>
 
-            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '2rem' }}>
-                🔒 Privacy First: Your data is processed locally and never sent to a server.
-            </p>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                        <div style={{ flex: 1, background: '#f5f5f5', padding: '1rem', borderRadius: '8px' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#666' }}>S-Level</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{parsedResult.sDays}</div>
+                        </div>
+                        <div style={{ flex: 1, background: '#f5f5f5', padding: '1rem', borderRadius: '8px' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#666' }}>L-Level</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{parsedResult.lDays}</div>
+                        </div>
+                    </div>
 
-            {/* Basic inline style for animation demo */}
-            <style>{`
-        .shredding-animation {
-          animation: shake 0.5s infinite;
-          border-color: var(--color-action) !important;
-        }
-        @keyframes shake {
-          0% { transform: translate(1px, 1px) rotate(0deg); }
-          10% { transform: translate(-1px, -2px) rotate(-1deg); }
-          20% { transform: translate(-3px, 0px) rotate(1deg); }
-          30% { transform: translate(3px, 2px) rotate(0deg); }
-          40% { transform: translate(1px, -1px) rotate(1deg); }
-          50% { transform: translate(-1px, 2px) rotate(-1deg); }
-          60% { transform: translate(-3px, 1px) rotate(0deg); }
-          70% { transform: translate(3px, 1px) rotate(-1deg); }
-          80% { transform: translate(-1px, -1px) rotate(1deg); }
-          90% { transform: translate(1px, 2px) rotate(0deg); }
-          100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-      `}</style>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <Button variant="secondary" onClick={() => { setParsedResult(null); setText(''); }}>Try Again</Button>
+                        <Button onClick={handleContinue}>Continue Setup</Button>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 };
