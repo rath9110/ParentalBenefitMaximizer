@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { STRATEGIES, STRATEGY_DETAILS } from '../logic/strategies';
 
 const OnboardingWizard = ({ onComplete }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         parentA: { name: 'You', income: 35000, agreement: 'None', hasTopUp: false },
         parentB: { name: 'Partner', income: 35000, agreement: 'None', hasTopUp: false },
-        goal: 'cash' // 'cash' or 'time'
+        strategy: STRATEGIES.BALANCED // Default
     });
 
     const updateParent = (parent, field, value) => {
@@ -15,10 +16,6 @@ const OnboardingWizard = ({ onComplete }) => {
             ...prev,
             [parent]: { ...prev[parent], [field]: value }
         }));
-    };
-
-    const handleChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     const nextStep = () => setStep(step + 1);
@@ -29,9 +26,10 @@ const OnboardingWizard = ({ onComplete }) => {
     };
 
     return (
-        <div className="container" style={{ padding: '4rem 1rem', maxWidth: '600px' }}>
+        <div className="container" style={{ padding: '4rem 1rem', maxWidth: '800px' }}>
             <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Let's customize your plan</h2>
 
+            {/* Progress Dots */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {[1, 2, 3].map(i => (
@@ -45,9 +43,10 @@ const OnboardingWizard = ({ onComplete }) => {
 
             <Card>
                 {step === 1 && (
-                    <div>
+                    <div className="step-content">
                         <h3>Who are the parents?</h3>
-                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>Customize names and incomes.</p>
+                        {/* Same as before... reusing previous code structure but omitting for brevity if unchanged? 
+                 Actually, best to keep full file content to avoid "search replace" errors with context. */}
 
                         {/* Parent A */}
                         <div style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
@@ -102,8 +101,6 @@ const OnboardingWizard = ({ onComplete }) => {
                 {step === 2 && (
                     <div>
                         <h3>Employer Agreements</h3>
-                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>Check if you have collective agreements (Föräldralön).</p>
-
                         {/* Parent A Agreement */}
                         <div style={{ marginBottom: '2rem' }}>
                             <strong style={{ display: 'block', marginBottom: '0.5rem' }}>{formData.parentA.name}</strong>
@@ -114,8 +111,7 @@ const OnboardingWizard = ({ onComplete }) => {
                             >
                                 <option value="None">No Agreement / Unsure</option>
                                 <option value="ITP1">Private Sector (ITP1)</option>
-                                <option value="KAP-KL">Municipal (KAP-KL)</option>
-                                <option value="PA-16">State (PA-16)</option>
+                                <option value="Other">Other</option>
                             </select>
 
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
@@ -138,8 +134,7 @@ const OnboardingWizard = ({ onComplete }) => {
                             >
                                 <option value="None">No Agreement / Unsure</option>
                                 <option value="ITP1">Private Sector (ITP1)</option>
-                                <option value="KAP-KL">Municipal (KAP-KL)</option>
-                                <option value="PA-16">State (PA-16)</option>
+                                <option value="Other">Other</option>
                             </select>
 
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
@@ -161,30 +156,35 @@ const OnboardingWizard = ({ onComplete }) => {
 
                 {step === 3 && (
                     <div>
-                        <h3>What is your main goal?</h3>
-                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>We'll optimize the algorithms for this.</p>
+                        <h3>Select a Strategy</h3>
+                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>
+                            Based on your profile, here are optimized templates.
+                        </p>
 
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                            <div
-                                onClick={() => handleChange('goal', 'time')}
-                                style={{
-                                    flex: 1, padding: '1rem', border: `2px solid ${formData.goal === 'time' ? 'var(--color-primary)' : '#eee'}`,
-                                    borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'center'
-                                }}
-                            >
-                                <h4>Max Time</h4>
-                                <p style={{ fontSize: '0.8rem' }}>Stretch days for 1.5+ years home.</p>
-                            </div>
-                            <div
-                                onClick={() => handleChange('goal', 'cash')}
-                                style={{
-                                    flex: 1, padding: '1rem', border: `2px solid ${formData.goal === 'cash' ? 'var(--color-primary)' : '#eee'}`,
-                                    borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'center'
-                                }}
-                            >
-                                <h4>Max Cash</h4>
-                                <p style={{ fontSize: '0.8rem' }}>Get highest monthly payout.</p>
-                            </div>
+                        <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+                            {Object.values(STRATEGIES).map(stratId => {
+                                const details = STRATEGY_DETAILS[stratId];
+                                const isSelected = formData.strategy === stratId;
+
+                                return (
+                                    <div
+                                        key={stratId}
+                                        onClick={() => setFormData(prev => ({ ...prev, strategy: stratId }))}
+                                        style={{
+                                            border: `2px solid ${isSelected ? 'var(--color-primary)' : '#eee'}`,
+                                            background: isSelected ? '#fdfdfd' : 'white',
+                                            borderRadius: '8px', padding: '1rem', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', gap: '1rem'
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '2rem' }}>{details.icon}</div>
+                                        <div>
+                                            <div style={{ fontWeight: 'bold' }}>{details.title}</div>
+                                            <div style={{ fontSize: '0.85rem', color: '#666' }}>{details.description}</div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

@@ -1,38 +1,31 @@
 import React, { useState } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { parseMinaSidorText } from '../utils/parser';
 
 const LandingPage = ({ onDataParsed }) => {
-    const [text, setText] = useState('');
-    const [parsedResult, setParsedResult] = useState(null);
-    const [isProcessing, setIsProcessing] = useState(false);
+    const [inputs, setInputs] = useState({
+        sDays: '',
+        lDays: '',
+        reservedDays: ''
+    });
 
-    const processText = (raw) => {
-        setIsProcessing(true);
-        setTimeout(() => {
-            const data = parseMinaSidorText(raw);
-            setParsedResult(data);
-            setIsProcessing(false);
-        }, 800);
-    };
-
-    const handlePaste = (e) => {
-        e.preventDefault();
-        const pastedText = e.clipboardData.getData('text');
-        setText(pastedText);
-        processText(pastedText);
+    const handleChange = (field, value) => {
+        setInputs(prev => ({ ...prev, [field]: value }));
     };
 
     const handleManualProcess = () => {
-        if (!text) return;
-        processText(text);
-    };
+        const s = parseInt(inputs.sDays) || 0;
+        const l = parseInt(inputs.lDays) || 0;
+        const r = parseInt(inputs.reservedDays) || 0;
 
-    const handleContinue = () => {
-        if (parsedResult) {
-            onDataParsed(parsedResult);
-        }
+        if (s <= 0 && l <= 0) return; // Basic validation
+
+        // Pass structured data
+        onDataParsed({
+            sDays: s,
+            lDays: l,
+            reservedDays: r
+        });
     };
 
     return (
@@ -40,59 +33,87 @@ const LandingPage = ({ onDataParsed }) => {
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
                 Maximize Your Parental Benefit
             </h1>
+            <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '3rem' }}>
+                Enter your available days from Försäkringskassan.
+            </p>
 
-            {!parsedResult ? (
-                <>
-                    <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '3rem' }}>
-                        Paste your Försäkringskassan summary below.
-                    </p>
-                    <Card>
-                        <textarea
-                            placeholder="Paste text from 'Mina Sidor' anywhere here..."
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            onPaste={handlePaste}
-                            style={{
-                                width: '100%',
-                                height: '150px',
-                                border: '2px dashed var(--color-primary)',
-                                borderRadius: 'var(--radius-md)',
-                                padding: '1rem',
-                                fontSize: '1rem',
-                                fontFamily: 'var(--font-mono)',
-                                backgroundColor: 'var(--color-bg)',
-                                outline: 'none',
-                                opacity: isProcessing ? 0.5 : 1
-                            }}
-                        />
-                        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button onClick={handleManualProcess} variant="action" disabled={!text || isProcessing}>
-                                {isProcessing ? 'Analyzing...' : 'Analyze'}
-                            </Button>
-                        </div>
-                    </Card>
-                </>
-            ) : (
-                <Card className="result-card">
-                    <h3 style={{ marginBottom: '1.5rem', color: 'var(--color-primary)' }}>We found your days!</h3>
+            <Card>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                        <div style={{ flex: 1, background: '#f5f5f5', padding: '1rem', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '0.8rem', color: '#666' }}>S-Level</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{parsedResult.sDays}</div>
-                        </div>
-                        <div style={{ flex: 1, background: '#f5f5f5', padding: '1rem', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '0.8rem', color: '#666' }}>L-Level</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{parsedResult.lDays}</div>
+                    {/* S-Level */}
+                    <div>
+                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                            Sjukpenningnivå (S-Level)
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input
+                                type="number"
+                                placeholder="e.g. 195"
+                                value={inputs.sDays}
+                                onChange={(e) => handleChange('sDays', e.target.value)}
+                                style={{
+                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                            <span className="text-muted">days left</span>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <Button variant="secondary" onClick={() => { setParsedResult(null); setText(''); }}>Try Again</Button>
-                        <Button onClick={handleContinue}>Continue Setup</Button>
+                    {/* L-Level */}
+                    <div>
+                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                            Lägstanivå (L-Level)
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input
+                                type="number"
+                                placeholder="e.g. 45"
+                                value={inputs.lDays}
+                                onChange={(e) => handleChange('lDays', e.target.value)}
+                                style={{
+                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                            <span className="text-muted">days left</span>
+                        </div>
                     </div>
-                </Card>
-            )}
+
+                    {/* Reserved */}
+                    <div>
+                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-alert)' }}>
+                            Start Date Locked/Reserved Days
+                        </label>
+                        <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>
+                            "Number of days that can't be transferred to my partner"
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input
+                                type="number"
+                                placeholder="e.g. 90"
+                                value={inputs.reservedDays}
+                                onChange={(e) => handleChange('reservedDays', e.target.value)}
+                                style={{
+                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-alert)',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                            <span className="text-muted">days locked</span>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button onClick={handleManualProcess} variant="action" disabled={!inputs.sDays && !inputs.lDays}>
+                            Continue Setup
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+
+            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '2rem' }}>
+                ℹ️ <strong>Tip:</strong> These values set your total budget. You'll plan exactly how to use them next.
+            </p>
         </div>
     );
 };
