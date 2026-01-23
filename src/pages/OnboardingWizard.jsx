@@ -5,11 +5,17 @@ import Card from '../components/Card';
 const OnboardingWizard = ({ onComplete }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
-        incomeParentA: 35000,
-        incomeParentB: 35000,
-        employer: '',
+        parentA: { name: 'You', income: 35000, agreement: 'None', hasTopUp: false },
+        parentB: { name: 'Partner', income: 35000, agreement: 'None', hasTopUp: false },
         goal: 'cash' // 'cash' or 'time'
     });
+
+    const updateParent = (parent, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [parent]: { ...prev[parent], [field]: value }
+        }));
+    };
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -40,29 +46,51 @@ const OnboardingWizard = ({ onComplete }) => {
             <Card>
                 {step === 1 && (
                     <div>
-                        <h3>What is your monthly income?</h3>
-                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>We use this to calculate your SGI and top-ups.</p>
+                        <h3>Who are the parents?</h3>
+                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>Customize names and incomes.</p>
 
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Parent A (You)</label>
-                            <input
-                                type="number"
-                                value={formData.incomeParentA}
-                                onChange={(e) => handleChange('incomeParentA', parseInt(e.target.value))}
-                                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
-                            />
-                            <span className="text-mono text-muted">{formData.incomeParentA.toLocaleString()} SEK/mo</span>
+                        {/* Parent A */}
+                        <div style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Parent A Name</label>
+                                <input
+                                    type="text"
+                                    value={formData.parentA.name}
+                                    onChange={(e) => updateParent('parentA', 'name', e.target.value)}
+                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Monthly Income</label>
+                                <input
+                                    type="number"
+                                    value={formData.parentA.income}
+                                    onChange={(e) => updateParent('parentA', 'income', parseInt(e.target.value) || 0)}
+                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                />
+                            </div>
                         </div>
 
+                        {/* Parent B */}
                         <div style={{ marginBottom: '1.5rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Parent B (Partner)</label>
-                            <input
-                                type="number"
-                                value={formData.incomeParentB}
-                                onChange={(e) => handleChange('incomeParentB', parseInt(e.target.value))}
-                                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
-                            />
-                            <span className="text-mono text-muted">{formData.incomeParentB.toLocaleString()} SEK/mo</span>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Parent B Name</label>
+                                <input
+                                    type="text"
+                                    value={formData.parentB.name}
+                                    onChange={(e) => updateParent('parentB', 'name', e.target.value)}
+                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Monthly Income</label>
+                                <input
+                                    type="number"
+                                    value={formData.parentB.income}
+                                    onChange={(e) => updateParent('parentB', 'income', parseInt(e.target.value) || 0)}
+                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                />
+                            </div>
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -73,24 +101,60 @@ const OnboardingWizard = ({ onComplete }) => {
 
                 {step === 2 && (
                     <div>
-                        <h3>Who is your employer?</h3>
-                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>Some employers pay more. We'll check your specific agreement.</p>
+                        <h3>Employer Agreements</h3>
+                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>Check if you have collective agreements (Föräldralön).</p>
 
-                        <select
-                            value={formData.employer}
-                            onChange={(e) => handleChange('employer', e.target.value)}
-                            style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc', marginBottom: '2rem' }}
-                        >
-                            <option value="">Select Agreement...</option>
-                            <option value="ITP1">Private Sector (ITP1)</option>
-                            <option value="KAP-KL">Municipal (KAP-KL)</option>
-                            <option value="PA-16">State (PA-16)</option>
-                            <option value="Other">Other / No Collective Agreement</option>
-                        </select>
+                        {/* Parent A Agreement */}
+                        <div style={{ marginBottom: '2rem' }}>
+                            <strong style={{ display: 'block', marginBottom: '0.5rem' }}>{formData.parentA.name}</strong>
+                            <select
+                                value={formData.parentA.agreement}
+                                onChange={(e) => updateParent('parentA', 'agreement', e.target.value)}
+                                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc', marginBottom: '0.5rem' }}
+                            >
+                                <option value="None">No Agreement / Unsure</option>
+                                <option value="ITP1">Private Sector (ITP1)</option>
+                                <option value="KAP-KL">Municipal (KAP-KL)</option>
+                                <option value="PA-16">State (PA-16)</option>
+                            </select>
+
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.parentA.hasTopUp}
+                                    onChange={(e) => updateParent('parentA', 'hasTopUp', e.target.checked)}
+                                />
+                                Apply "10% Top-up" Calculation
+                            </label>
+                        </div>
+
+                        {/* Parent B Agreement */}
+                        <div style={{ marginBottom: '2rem' }}>
+                            <strong style={{ display: 'block', marginBottom: '0.5rem' }}>{formData.parentB.name}</strong>
+                            <select
+                                value={formData.parentB.agreement}
+                                onChange={(e) => updateParent('parentB', 'agreement', e.target.value)}
+                                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc', marginBottom: '0.5rem' }}
+                            >
+                                <option value="None">No Agreement / Unsure</option>
+                                <option value="ITP1">Private Sector (ITP1)</option>
+                                <option value="KAP-KL">Municipal (KAP-KL)</option>
+                                <option value="PA-16">State (PA-16)</option>
+                            </select>
+
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.parentB.hasTopUp}
+                                    onChange={(e) => updateParent('parentB', 'hasTopUp', e.target.checked)}
+                                />
+                                Apply "10% Top-up" Calculation
+                            </label>
+                        </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Button variant="secondary" onClick={prevStep} style={{ background: 'transparent', color: 'var(--color-text-main)' }}>Back</Button>
-                            <Button onClick={nextStep} disabled={!formData.employer}>Next</Button>
+                            <Button onClick={nextStep}>Next</Button>
                         </div>
                     </div>
                 )}

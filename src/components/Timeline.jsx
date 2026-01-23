@@ -1,78 +1,60 @@
 import React from 'react';
 
-const Timeline = () => {
-    // Mock data for the timeline (18 months)
+const Timeline = ({ totalSDays, workRates, onMonthClick }) => {
     const months = Array.from({ length: 18 }, (_, i) => i + 1);
 
     return (
         <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '1rem' }}>
             <div style={{ display: 'flex', minWidth: '1000px', position: 'relative', paddingTop: '2rem' }}>
 
-                {/* Child Age / Months Axis */}
-                {months.map(m => (
-                    <div key={m} style={{ flex: 1, minWidth: '60px', textAlign: 'center', position: 'relative' }}>
-                        <span style={{ fontSize: '0.8rem', color: '#999', display: 'block', marginBottom: '0.5rem' }}>
-                            Mo {m}
-                        </span>
-                        {/* The vertical grid line */}
-                        <div style={{
-                            height: '200px', width: '1px', background: '#eee', margin: '0 auto',
-                            borderRight: m === 12 ? '2px dashed var(--color-alert)' : 'none'
-                        }} />
+                {months.map(m => {
+                    const rate = workRates[m] || 0;
+                    // Visual: 0% work = High Bar (Full Leave), 100% work = Low Bar? Or distinct colors?
+                    // Let's use Color Opacity/Fill.
+                    // Green = Leave (Low Work Rate), Grey = Work (High Work Rate).
+                    const isLeave = rate < 100;
 
-                        {/* 12-Month Checkpoint Label */}
-                        {m === 12 && (
+                    return (
+                        <div
+                            key={m}
+                            onClick={() => onMonthClick(m)}
+                            style={{
+                                flex: 1, minWidth: '60px', textAlign: 'center', position: 'relative', cursor: 'pointer',
+                                transition: 'background 0.2s'
+                            }}
+                            className="timeline-month"
+                        >
+                            <span style={{ fontSize: '0.8rem', color: '#999', display: 'block', marginBottom: '0.5rem' }}>
+                                Mo {m}
+                            </span>
+
+                            {/* Grid Line */}
                             <div style={{
-                                position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
-                                background: 'var(--color-alert)', color: 'white', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px',
-                                whiteSpace: 'nowrap'
+                                height: '200px', width: '1px', background: '#eee', margin: '0 auto',
+                                borderRight: m === 12 ? '2px dashed var(--color-alert)' : 'none'
+                            }} />
+
+                            {/* Interactive Block Overlay */}
+                            <div style={{
+                                position: 'absolute', top: '30px', left: '2px', right: '2px', height: '160px',
+                                borderRadius: '4px',
+                                background: isLeave ? 'var(--color-primary)' : '#ccc',
+                                opacity: isLeave ? 1 - (rate / 100) * 0.8 : 0.1, // Full opacity if 0% work.
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: isLeave ? 'white' : '#666', fontWeight: 'bold', fontSize: '0.9rem',
+                                flexDirection: 'column'
                             }}>
-                                SGI Protection Starts
+                                {rate < 100 ? <span>Leave</span> : <span>Work</span>}
+                                <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>{rate}% Work</span>
                             </div>
-                        )}
-                    </div>
-                ))}
-
-                {/* Tracks Layer (Overlaying grid) */}
-                <div style={{
-                    position: 'absolute', top: '50px', left: 0, right: 0, bottom: 0,
-                    display: 'flex', flexDirection: 'column', gap: '1rem', pointerEvents: 'none'
-                }}>
-
-                    {/* Parent A Track */}
-                    <div style={{ height: '40px', position: 'relative', width: '100%' }}>
-                        {/* Example segments */}
-                        <div style={{
-                            position: 'absolute', left: '2%', width: '30%', height: '100%',
-                            background: '#4A90E2', borderRadius: '4px', opacity: 0.8,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8rem', fontWeight: 'bold'
-                        }}>
-                            Parent A (100%)
                         </div>
-                    </div>
-
-                    {/* Parent B Track */}
-                    <div style={{ height: '40px', position: 'relative', width: '100%' }}>
-                        <div style={{
-                            position: 'absolute', left: '35%', width: '20%', height: '100%',
-                            background: '#50E3C2', borderRadius: '4px', opacity: 0.8,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8rem', fontWeight: 'bold'
-                        }}>
-                            Parent B (50%)
-                        </div>
-                    </div>
-
-                    {/* Joint/Double Days Track */}
-                    <div style={{ height: '20px', position: 'relative', width: '100%', marginTop: '0.5rem' }}>
-                        <div style={{
-                            position: 'absolute', left: '10%', width: '5%', height: '100%',
-                            background: '#F5A623', borderRadius: '10px', opacity: 0.9
-                        }} title="Double Days" />
-                    </div>
-
-                </div>
+                    );
+                })}
 
             </div>
+            <style>{`
+         .timeline-month:hover { background-color: rgba(0,0,0,0.02); }
+       `}</style>
         </div>
     );
 };
