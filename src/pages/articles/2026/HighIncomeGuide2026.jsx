@@ -76,7 +76,7 @@ const HighIncomeGuide2026 = ({ onBack }) => {
                     </p>
                     <ul style={{ marginBottom: '1.5rem', paddingLeft: '1.5rem' }}>
                         <li style={{ marginBottom: '0.5rem' }}><strong>Brytpunkt 2026:</strong> Du börjar betala 20 % statlig inkomstskatt på inkomster över 660 400 kr per år (ca 55 033 kr/mån).</li>
-                        <li><strong>Marginalskatten:</strong> Över denna nivå kan din totala marginalskatt (kommunal + statlig) landa på omkring 52–53 % beroende på din hemkommun.</li>
+                        <li><strong>Marginalskatten:</strong> Över denna nivå kan din totala marginalskatt (kommunal + statlig) landa på omkring 52-53 % beroende på din hemkommun.</li>
                     </ul>
                     <p style={{ background: '#fff3e0', padding: '1rem', borderLeft: '4px solid #ff9800', fontStyle: 'italic', marginBottom: '1.5rem' }}>
                         <strong>Strategiskt tips:</strong> Om du tar ut 7 dagar i veckan som höginkomsttagare riskerar du att pressa upp din beskattningsbara inkomst över brytpunkten, vilket gör att staten tar en större del av din föräldrapenning.

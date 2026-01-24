@@ -10,6 +10,7 @@ import HighIncomeGuide2026 from './pages/articles/2026/HighIncomeGuide2026';
 import SGIGuide2026 from './pages/articles/2026/SGIGuide2026';
 import HolidayGuide2026 from './pages/articles/2026/HolidayGuide2026';
 import TransferDaysGuide2026 from './pages/articles/2026/TransferDaysGuide2026';
+import MjukstartenGuide2026 from './pages/articles/2026/MjukstartenGuide2026';
 
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 
@@ -48,6 +49,8 @@ function AppContent() {
             navigate('/articles/2026/holidays');
         } else if (target === 'TRANSFER_DAYS_2026') {
             navigate('/articles/2026/transfer-days');
+        } else if (target === 'PART_TIME_2026') {
+            navigate('/articles/2026/mjukstarten');
         } else {
             navigate('/');
         }
@@ -89,6 +92,9 @@ function AppContent() {
                 } />
                 <Route path="/articles/2026/transfer-days" element={
                     <TransferDaysGuide2026 onBack={() => navigate('/')} />
+                } />
+                <Route path="/articles/2026/mjukstarten" element={
+                    <MjukstartenGuide2026 onBack={() => navigate('/')} />
                 } />
             </Routes>
         </div>

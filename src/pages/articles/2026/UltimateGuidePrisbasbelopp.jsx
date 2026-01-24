@@ -67,7 +67,7 @@ const UltimateGuidePrisbasbelopp = ({ onBack }) => {
 
                 <section style={{ marginBottom: '4rem', lineHeight: '1.8', fontSize: '1.1rem', color: '#333' }}>
                     <p style={{ marginBottom: '1.5rem' }}>
-                        Välkommen till 2026. Det här året är prisbasbeloppet fastställt till <strong>59 200 kr</strong>, vilket direkt påverkar hur mycket pengar du får i plånboken när du är hemma med barn. Att navigera i föräldraförsäkringen handlar om mer än att bara "vara ledig" – det är en strategisk planering för att skydda din SGI, maximera din pension och få ut så många dagar som möjligt tillsammans med familjen.
+                        Välkommen till 2026. Det här året är prisbasbeloppet fastställt till <strong>59 200 kr</strong>, vilket direkt påverkar hur mycket pengar du får i plånboken när du är hemma med barn. Att navigera i föräldraförsäkringen handlar om mer än att bara "vara ledig" - det är en strategisk planering för att skydda din SGI, maximera din pension och få ut så många dagar som möjligt tillsammans med familjen.
                     </p>
 
                     <h2 style={{ fontSize: '1.8rem', color: 'var(--color-primary)', marginTop: '2.5rem', marginBottom: '1rem' }}>Grunderna: Dina 480 dagar</h2>
@@ -106,7 +106,7 @@ const UltimateGuidePrisbasbelopp = ({ onBack }) => {
                     <h2 style={{ fontSize: '1.8rem', color: 'var(--color-primary)', marginTop: '2.5rem', marginBottom: '1rem' }}>SGI-skydd: De kritiska milstolparna</h2>
                     <p style={{ marginBottom: '1.5rem' }}>Det vanligaste felet föräldrar gör är att missa kraven för att skydda sin SGI.</p>
 
-                    <h3 style={{ fontSize: '1.4rem', color: '#444', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Barnets första år (0–12 månader)</h3>
+                    <h3 style={{ fontSize: '1.4rem', color: '#444', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Barnets första år (0-12 månader)</h3>
                     <p style={{ marginBottom: '1rem' }}>
                         Under barnets första år är din SGI helt skyddad, oavsett om du tar ut föräldrapenning eller inte. Du kan alltså "snåla" på dagarna för att förlänga ledigheten utan att riskera din framtida ersättning vid sjukdom eller VAB.
                     </p>

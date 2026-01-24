@@ -64,7 +64,7 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
     let usedL = 0;
 
     // Date setup
-    const TODAY_2026 = new Date('2026-01-24'); // Fixed "Today" anchor for persona
+    const TODAY_2026 = new Date('2026-01-24');
     const current = new Date(startDate);
     const childDob = childDobStr ? new Date(childDobStr) : new Date(startDate);
 
@@ -74,9 +74,10 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
     let budgetDouble = (strategyId === STRATEGIES.EQUALITY) ? STATUTORY_CONSTANTS_2026.DOUBLE_DAY_LIMIT : (doubleDays || 0);
 
     // Strategy 6: Grandparent - Reserve days upfront
+    // Logic: "Transfer up to 45 days per parent". We simply remove them from the 'bookable' pool
+    // to simulate them being transferred away.
     if (strategyId === STRATEGIES.GRANDPARENT) {
-        budgetS -= (STATUTORY_CONSTANTS_2026.PROXY_TRANSFER_LIMIT * 2); // Reserve 90 days
-        // If users don't have enough days, we handle that by running out early in loop
+        budgetS -= (STATUTORY_CONSTANTS_2026.PROXY_TRANSFER_LIMIT * 2); // Reserve 90 days total
     }
 
     // Determine High Earner
@@ -85,14 +86,11 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
     const highEarnerId = incA >= incB ? 'parentA' : 'parentB';
     const lowEarnerId = incA >= incB ? 'parentB' : 'parentA';
 
-    // Strategy 8: Part-Time Net Match Calculation
+    // Strategy 8: Mjukstarten (Part-Time Net Match)
     let partTimeExtent = 0;
     if (strategyId === STRATEGIES.PART_TIME) {
-        // Assume default "Mjukstart" target is 80% work (standard part time) or use profiles?
-        // Let's assume user works 80% (WorkRate 80).
-        // Gap is 20%. 
-        // We need to fill 20% Income.
-        // Approx: Need 0.25 S-days/day to be safe (since S-day is 80% of salary, 0.25 * 0.8 = 0.2 -> 20%)
+        // "Find the lowest fraction (1/4 or 1/2) that bridges the gap."
+        // Simplified default: 0.25 (1/4) to complement an 80% work schedule.
         partTimeExtent = 0.25;
     }
 
@@ -104,13 +102,13 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
 
     // Loop 2 Years (730 Days)
     for (let i = 0; i < 730; i++) {
-        // Stop if out of days (Soft stop, strategy logic might try to force L days)
+        // Soft stop if out of days
         if (usedS >= budgetS && usedL >= budgetL && budgetDouble <= 0) break;
 
         const y = current.getFullYear();
         const m = String(current.getMonth() + 1).padStart(2, '0');
         const d = String(current.getDate()).padStart(2, '0');
-        const dateStr = `${y}-${m}-${d}`; // Local YYYY-MM-DD
+        const dateStr = `${y}-${m}-${d}`;
 
         const dayOfWeek = current.getDay(); // 0=Sun, 6=Sat
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
@@ -122,30 +120,31 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
         const isYear1 = childAgeDays <= 365;
         const isUnder15Months = childAgeDays <= 450;
 
-        // Strategy Decision Logic
         let shouldBook = false;
-        let pId = 'parentA'; // Default
+        let pId = 'parentA';
         let type = 'S';
         let amount = 1.0;
 
         // --- 1. DOUBLE DAYS (Priority) ---
-        // Strategy 7 uses 60 in first 15 months. 
+        // "Schedule 60 Double Days within the first 15 months."
         if (budgetDouble > 0 && isUnder15Months && !isWeekend && !isHoliday) {
-            // Check if we have S-days (Double days usually use S-days from valid parents)
-            // Simplified: We book a "Double" event which consumes 1 day from each parent's quota? 
-            // In system, Double Day = 1 day deducted from EACH parent.
             if (strategyId === STRATEGIES.EQUALITY || doubleDays > 0) {
+                // Determine valid Double Days usage (requires 1 S-day from each)
                 if (budgetS >= 2) {
-                    allocation[dateStr] = {
-                        parentA: { parentId: 'parentA', type: 'S', extent: 1.0 },
-                        parentB: { parentId: 'parentB', type: 'S', extent: 1.0 }
-                    };
-                    usedS += 2; // 1 from each
-                    usedS_A++;
-                    usedS_B++;
-                    budgetDouble--;
-                    current.setDate(current.getDate() + 1);
-                    continue; // Done for this day
+                    // Check specific parent caps
+                    // We need 1 from A and 1 from B
+                    if (usedS_A < maxS_PerParent && usedS_B < maxS_PerParent) {
+                        allocation[dateStr] = {
+                            parentA: { parentId: 'parentA', type: 'S', extent: 1.0 },
+                            parentB: { parentId: 'parentB', type: 'S', extent: 1.0 }
+                        };
+                        usedS += 2;
+                        usedS_A++;
+                        usedS_B++;
+                        budgetDouble--;
+                        current.setDate(current.getDate() + 1);
+                        continue;
+                    }
                 }
             }
         }
@@ -154,55 +153,97 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
 
         switch (strategyId) {
             case STRATEGIES.TIME_STRETCHER:
-                // Year 1: 0 days. Year 2: 5 days/week.
-                // Smart Logic: Use L-days on weekends.
+                // Year 1: 0 days. Year 2: 5 days/week to protect SGI.
+                // "Smörgås-logic": If Sat/Sun used, Fri or Mon must be L-level.
                 if (!isYear1) {
-                    if (isWeekend) {
+                    // Start filling from Weekends backwards? 
+                    // To maximize time off, we want to use L days on weekends.
+                    // If we use L on Sat/Sun, we must work/take L on Mon/Fri.
+                    // Goal is 5 days activity. 
+                    // Pattern: L (Fri), L (Sat), L (Sun) + 2 Work/S days?
+                    // Or SGI protection says "Active 5 days".
+                    // Taking L-day counts as activity.
+                    // Strategy: Take Fri, Sat, Sun, Mon as L-days? (4 days). 
+                    // Need 1 more day to reach 5? Tue?
+                    // This strategy consumes L days fast.
+
+                    // Simplified implementation of "Smörgås": 
+                    // Fri(L), Sat(L), Sun(L) -> 3 days/week used. Cost = 3 L days.
+                    // User works Mon-Thu? (4 days work + 3 days L = 7 days activity). Perfect SGI protection.
+                    // This creates a 4-day work week? Or 0-day work week?
+                    // "Maximize total number of days at home".
+                    // If we want max at home, we don't work.
+                    // So we need 5 days Benefit.
+                    // Fri(L), Sat(L), Sun(L), Mon(S), Tue(S)?
+
+                    // Let's implement a standard "Long Weekend" pattern:
+                    // Fri (L), Sat (L), Sun (L). And Mon (S), Tue (S).
+                    // This uses 2 S and 3 L per week. Highly efficient stretching.
+
+                    if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) { // Fri, Sat, Sun
                         shouldBook = true;
                         type = 'L';
-                        pId = (Math.floor(i / 7) % 2 === 0) ? 'parentA' : 'parentB'; // Alternate weeks logic
-                    } else if (dayOfWeek >= 1 && dayOfWeek <= 3) { // Mon-Wed S-days
+                        // Alternate parents weekly
+                        const weekNum = Math.floor(i / 7);
+                        pId = (weekNum % 2 === 0) ? 'parentA' : 'parentB';
+                    } else if (dayOfWeek === 1 || dayOfWeek === 2) { // Mon, Tue
                         shouldBook = true;
                         type = 'S';
-                        pId = (Math.floor(i / 7) % 2 === 0) ? 'parentA' : 'parentB';
+                        const weekNum = Math.floor(i / 7);
+                        pId = (weekNum % 2 === 0) ? 'parentA' : 'parentB';
                     }
                 }
                 break;
 
             case STRATEGIES.CASH_MAXER:
-                // 7 Days / Week
-                shouldBook = true;
-                pId = highEarnerId;
-                // Switch parent after X days? Let's say high earner takes first 6 months then swap?
-                // Request says: "Identify high earner... Schedule 7 days... Prioritize top-up window".
-                // We'll stick to high earner until they run dry? Or swap? 
-                // Let's swap every month to be safe or stick to high earner. 
-                // Let's stick high earner for first 180 days (Top up window usually), then maybe swap?
-                // Let's keep High Earner as primary.
-                type = 'S';
-                // Use L days if S runs out?
-                if (usedS >= budgetS) type = 'L';
+                // "7.0 S-level days/week during the employer's 10% top-up window (first 180 days)."
+                // After 180 days, continue with High Earner until cap?
+                // Or switch? Usually max cash means high earner takes all.
+
+                if (childAgeDays <= STATUTORY_CONSTANTS_2026.TOP_UP_WINDOW_DAYS) {
+                    shouldBook = true;
+                    type = 'S';
+                    pId = highEarnerId;
+                } else {
+                    // After top-up window, still prioritize high earner for SGI cap reasons?
+                    // Yes, unless they run out.
+                    shouldBook = true;
+                    type = 'S';
+                    pId = highEarnerId;
+                }
+
+                // Fallback to L if S runs out is handled by generalized logic below.
                 break;
 
             case STRATEGIES.SGI_FORTRESS:
-                // Year 1: 0 days (if possible). Year 2: Strict 5 days.
+                // "Year 1: 0 days payout. Year 2: Enforce 5.0 days/week activity."
+                // "Auto-fill gaps with smallest possible fractions (1/8)."
+                // NOTE: This assumes the user IS NOT WORKING in Year 2, or needs to top up?
+                // Usually "SGI Fortress" implies the user wants to stay home but protect SGI.
+                // So we need 5 full days of "activity". 
+                // If not working, we need 5 Benefit Days.
+                // IF working 80%, we fill the gap.
+                // Let's assume the user is "At Home" fully in this simulation?
+                // If so, 5 days S/L per week.
+                // "Smallest fraction" suggests they ARE working?
+                // "Often used to maintain a 4-day work week (80%) with a Friday SGI-filler."
+                // OK, let's model that: Mon-Thu Work (Active). Fri -> needs filler.
+
                 if (!isYear1) {
-                    if (!isWeekend) {
+                    if (dayOfWeek === 5) { // Friday
                         shouldBook = true;
                         type = 'S';
-                        pId = (Math.floor(i / 7) % 2 === 0) ? highEarnerId : lowEarnerId; // Alternate
+                        amount = 0.125; // "1/8 to seal the week"
+                        pId = (Math.floor(i / 7) % 2 === 0) ? highEarnerId : lowEarnerId;
                     }
                 }
                 break;
 
             case STRATEGIES.HOLIDAY_SANDWICH:
-                // Scan for Squeeze days.
-                // 2026: May 14 (Thu) is holiday -> May 15 (Fri) is Squeeze.
-                // Midsummer Eve (Jun 19) is Holiday -> Thu Jun 18 is NOT squeeze, but nice.
-                // Logic: If !Weekend AND !Holiday...
+                // "Scan HOLIDAYS_2026. Identify Klämdagar... Take Friday as S-day."
+                // Logic: If Friday is between Thursday Holiday and Weekend.
+                // Or if Monday is between Weekend and Tuesday Holiday.
                 if (!isWeekend && !isHoliday) {
-                    // Check if TOMORROW or YESTERDAY is holiday?
-                    // Check if TOMORROW or YESTERDAY is holiday?
                     const tmrw = new Date(current); tmrw.setDate(tmrw.getDate() + 1);
                     const yest = new Date(current); yest.setDate(yest.getDate() - 1);
 
@@ -213,89 +254,80 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
                     const isSqueeze = HOLIDAYS_2026.includes(tmrwStr) || HOLIDAYS_2026.includes(yestStr);
 
                     if (isSqueeze) {
-                        // Take it!
                         shouldBook = true;
                         type = 'S';
-                        pId = highEarnerId;
-                    } else if (dayOfWeek <= 4) { // Fill normal Mon-Thu if needed? Or just Hopping?
-                        // Assuming "Holiday Hopper" only generates the squeezes + minimal maintenance?
-                        // Or is it a full plan? Usually full plan.
-                        // Let's fill Mon-Fri normally, but ensure Squeeze is taken 
-                        shouldBook = true;
-                        type = 'S';
-                        pId = (Math.floor(i / 14) % 2 === 0) ? 'parentA' : 'parentB';
+                        pId = highEarnerId; // Or alternate
                     }
                 }
                 break;
 
             case STRATEGIES.PENSION_PROTECT:
-                // 1/8th S-day on every workday
+                // "Take exactly 0.125 (1/8) S-day for every day of partial work."
+                // Assuming standard Mon-Fri work week where user works <100%.
+                // We book 0.125 daily on weekdays.
                 if (!isWeekend && !isHoliday) {
                     shouldBook = true;
                     type = 'S';
                     amount = 0.125;
-                    pId = 'parentA'; // Or both? Assuming User is Parent A logic for now or alternating.
+                    pId = 'parentA'; // Usually applies to the one working part time. Default A.
                 }
                 break;
 
             case STRATEGIES.EQUALITY:
-                // 50/50. Double days handled.
-                // Alternate 3 months blocks.
-                // Month 0-3: A (already has double days mixed in)
-                // Month 4-6: B ...
-                {
-                    if (!isWeekend && !isHoliday) {
-                        shouldBook = true;
-                        type = 'S';
-                        // 3 month block ~ 90 days.
-                        const block = Math.floor(i / 90);
-                        pId = (block % 2 === 0) ? 'parentA' : 'parentB';
-                    }
+                // "Swap primary caregiver every 3-6 months."
+                // "60 Double Days" handled above.
+                if (!isWeekend && !isHoliday) {
+                    shouldBook = true;
+                    type = 'S';
+                    // 3 month block ~ 90 days.
+                    const block = Math.floor(i / 90);
+                    pId = (block % 2 === 0) ? 'parentA' : 'parentB';
                 }
                 break;
 
             case STRATEGIES.PART_TIME:
+                // "Work part-time (e.g., 60-80%)".
+                // "Find lowest fraction (1/4 or 1/2)".
+                // We determined 0.25 above.
+                // Book on all weekdays.
                 if (!isWeekend && !isHoliday) {
                     shouldBook = true;
                     type = 'S';
                     amount = partTimeExtent;
-                    pId = (Math.floor(i / 14) % 2 === 0) ? 'parentA' : 'parentB';
+                    const weekNum = Math.floor(i / 7);
+                    pId = (weekNum % 2 === 0) ? 'parentA' : 'parentB';
                 }
                 break;
 
             case STRATEGIES.GRANDPARENT:
-                // Days reserved. Fill rest normally (Balanced).
+                // "Transfer up to 45 days...". Days removed from budget.
+                // Remainder: Normal usage? Or just burn weekends?
+                // Let's assume balanced usage of remaining days.
                 if (!isWeekend && !isHoliday && dayOfWeek <= 4) {
                     shouldBook = true;
                     type = 'S';
-                    pId = (Math.floor(i / 7) % 2 === 0) ? 'parentA' : 'parentB';
+                    const weekNum = Math.floor(i / 7);
+                    pId = (weekNum % 2 === 0) ? 'parentA' : 'parentB';
                 }
                 break;
         }
 
         // --- Execute Booking with Statutory Limits ---
         if (shouldBook) {
-            // Statutory Cap Logic for S-Days
+            // Cap Logic
             if (type === 'S') {
                 if (pId === 'parentA' && usedS_A + amount > maxS_PerParent) {
-                    // Try Parent B?
-                    if (usedS_B + amount <= maxS_PerParent) {
-                        pId = 'parentB'; // Spillover
-                    } else {
-                        // Both Capped: Fallback to L if possible
-                        if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false;
-                    }
+                    // Try Spillover
+                    if (usedS_B + amount <= maxS_PerParent) pId = 'parentB';
+                    else { if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false; }
                 } else if (pId === 'parentB' && usedS_B + amount > maxS_PerParent) {
-                    // Try Parent A?
-                    if (usedS_A + amount <= maxS_PerParent) {
-                        pId = 'parentA'; // Spillover
-                    } else {
-                        if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false;
-                    }
+                    // Try Spillover
+                    if (usedS_A + amount <= maxS_PerParent) pId = 'parentA';
+                    else { if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false; }
                 }
             }
 
-            // Total Budget Check
+            // Budget Check
             if (type === 'S' && usedS + amount > budgetS) {
                 if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false;
             }
@@ -316,7 +348,66 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
         }
 
         current.setDate(current.getDate() + 1);
-    }
+    } // End Loop
 
     return allocation;
+};
+
+/**
+ * 2026 Strategy Analysis
+ * Checks for period limits (3-period rule) and tax warnings.
+ */
+export const analyzeStrategy = (allocation, userProfile) => {
+    const warnings = [];
+    const dates = Object.keys(allocation).sort();
+
+    // 1. Check Income Cap (State Tax)
+    // "If total annual income exceeds 660,400 SEK, trigger a warning"
+    // Simplified: Check if user profile income * 12 > Threshold
+    const THRESHOLD = STATUTORY_CONSTANTS_2026.STATE_TAX_THRESHOLD;
+    if (userProfile.parentA.income * 12 > THRESHOLD || userProfile.parentB.income * 12 > THRESHOLD) {
+        warnings.push({
+            type: 'tax',
+            message: `Warning: High Income detected (> ${THRESHOLD.toLocaleString()} SEK/yr). State tax (20%) may reduce benefit value. Consider "Pension Protect" strategy.`
+        });
+    }
+
+    // 2. "3-Period Rule" Check
+    // "If the chosen strategy creates more than 3 distinct blocks of leave per calendar year."
+    // We need to count disjoint intervals.
+    // Heuristic: If gap between bookings > 0 days (excluding weekends?), it's a new period?
+    // Actually, "Period" usually means any contiguous block.
+    // "Every Friday" is legally ONE period if requested as such.
+    // So we need to group by "Regularity".
+    // If we detect a pattern (e.g. every 7 days), it's 1 period.
+    // Simplified: Count > 7 day gaps as new periods.
+
+    let periods = 0;
+    if (dates.length > 0) {
+        periods = 1;
+        let lastDate = new Date(dates[0]);
+
+        for (let i = 1; i < dates.length; i++) {
+            const thisDate = new Date(dates[i]);
+            const diffDays = (thisDate - lastDate) / (1000 * 60 * 60 * 24);
+
+            // If gap is significant (> 10 days?), count as new period
+            // "Every Friday" -> gap is 7 days.
+            // "Every Month" -> gap is 30 days.
+            // Let's set tolerance at 8 days.
+            if (diffDays > 8) {
+                periods++;
+            }
+            lastDate = thisDate;
+        }
+    }
+
+    if (periods > STATUTORY_CONSTANTS_2026.PERIOD_LIMIT_PER_YEAR) {
+        warnings.push({
+            type: 'hr',
+            message: `Notice: This plan creates ~${periods} leave periods. Swedish law guarantees 3 periods/year. Additional periods require employer approval.`
+        });
+    }
+
+    return warnings;
 };

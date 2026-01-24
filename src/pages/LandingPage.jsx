@@ -270,6 +270,18 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             Möjligheten att överlåta dagar till anhöriga. Regler för SGI, pensionärer och hur ni maximerar familjepusslet.
                         </p>
                     </li>
+                    <li style={{ marginBottom: '1.5rem' }}>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('PART_TIME_2026'); }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <span>🔄</span> Mjukstarten: Så planerar du en hållbar föräldraledighet 2026
+                        </a>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            Kombinera karriär och föräldraskap. Vi går igenom reglerna för delledighet, SGI-skydd och hur du behåller 100% inkomst.
+                        </p>
+                    </li>
                 </ul>
             </div>
         </div>

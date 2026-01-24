@@ -72,7 +72,7 @@ const HolidayGuide2026 = ({ onBack }) => {
 
                     <h2 style={{ fontSize: '1.8rem', color: 'var(--color-primary)', marginTop: '2.5rem', marginBottom: '1rem' }}>De nya reglerna 2026: Planera i tid</h2>
                     <p style={{ marginBottom: '1.5rem' }}>
-                        Från och med 1 januari 2026 har arbetsgivare fått utökad rätt att kräva att föräldraledighet för perioden juni–augusti anmäls samtidigt som huvudsemestern planeras (ofta senast i mars/april). Detta görs för att underlätta bemanningen, så se till att ha din plan klar tidigt.
+                        Från och med 1 januari 2026 har arbetsgivare fått utökad rätt att kräva att föräldraledighet för perioden juni-augusti anmäls samtidigt som huvudsemestern planeras (ofta senast i mars/april). Detta görs för att underlätta bemanningen, så se till att ha din plan klar tidigt.
                     </p>
 
                     <h2 style={{ fontSize: '1.8rem', color: 'var(--color-primary)', marginTop: '2.5rem', marginBottom: '1rem' }}>Strategi 1: "Semester-Sandwichen"</h2>
@@ -97,7 +97,7 @@ const HolidayGuide2026 = ({ onBack }) => {
                     <h2 style={{ fontSize: '1.8rem', color: 'var(--color-primary)', marginTop: '2.5rem', marginBottom: '1rem' }}>Ekonomi: Semesterlön vs Föräldrapenning</h2>
                     <p style={{ marginBottom: '1rem' }}>När du planerar din sommar är det viktigt att räkna på nettoeffekten.</p>
                     <ul style={{ marginBottom: '1.5rem', paddingLeft: '1.5rem' }}>
-                        <li style={{ marginBottom: '0.5rem' }}><strong>Semesterlönetillägg:</strong> När du tar semester får du ofta din vanliga lön plus ett extra tillägg (ca 0,43–1,82 % av månadslönen per dag beroende på avtal).</li>
+                        <li style={{ marginBottom: '0.5rem' }}><strong>Semesterlönetillägg:</strong> När du tar semester får du ofta din vanliga lön plus ett extra tillägg (ca 0,43-1,82 % av månadslönen per dag beroende på avtal).</li>
                         <li><strong>SGI-taket:</strong> Kom ihåg att föräldrapenningen är begränsad till 80 % av din inkomst upp till taket på 592 000 kr år 2026. För höginkomsttagare är semesterdagar därför betydligt mer värda i rena pengar än föräldradagar.</li>
                     </ul>
 
