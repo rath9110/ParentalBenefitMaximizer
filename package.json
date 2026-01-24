@@ -18,5 +18,11 @@
     "react-dom": "^19.2.3",
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.13.0"
+  },
+  "overrides": {
+    "react-helmet-async": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
