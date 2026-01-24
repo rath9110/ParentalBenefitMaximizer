@@ -93,64 +93,89 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
         for (let i = 0; i < 365; i++) {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
-            const dStr = d.toISOString().split('T')[0];
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const dStr = `${y}-${m}-${day}`;
+
             const allocationMap = allocatedDays[dStr];
+            const isHoliday = HOLIDAYS_2026.includes(dStr);
+            const wDay = d.getDay();
+            const isWeekend = wDay === 0 || wDay === 6;
+            const isFreeTime = isWeekend || isHoliday;
 
             const allocA = allocationMap?.parentA || null;
             const allocB = allocationMap?.parentB || null;
 
             // Parent A
-            if (!allocA) {
-                // Working 100%
-                grossWorkA += getDailySalary(userProfile.parentA.income);
-            } else {
+            // Base Salary (Always earned unless deducted for work-day absence)
+            // Deduction only happens if (Allocated AND WorkDay)
+            let deductA = false;
+            let benefitA = 0;
+
+            if (allocA) {
                 const extent = allocA.extent || 1;
-                const workExtent = 1 - extent; // If 0.125 extent, working 0.875?
-                // Assumption: If allocated, you work the rest?
-                // Yes, "Part-Time Transition" -> 75% work, 0.25 benefit.
-
-                if (workExtent > 0) {
-                    grossWorkA += getDailySalary(userProfile.parentA.income) * workExtent;
-                }
-
+                // Calculate Benefit
                 if (allocA.type === 'S') {
-                    // Benefit S
                     const cappedIncome = Math.min(userProfile.parentA.income, 45000);
-                    grossBenefitA += ((cappedIncome * 12 * 0.8) / 365) * extent;
-
-                    // Top Up (Salary) - Applies to Benefit part?
-                    // Usually top up is % of salary gap.
-                    // Let's assume TopUp only applies if "On Leave".
+                    benefitA += ((cappedIncome * 12 * 0.8) / 365) * extent;
                     if (userProfile.parentA.hasTopUp) {
-                        grossWorkA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
+                        // Top up usually only for Work Days? Or if you take S-days?
+                        // Collective agreement usually pays top-up on S-days regardless?
+                        // Let's assume yes.
+                        benefitA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
                     }
                 } else {
-                    // Benefit L
-                    grossBenefitA += 180 * extent;
+                    benefitA += 180 * extent;
+                }
+
+                // Work Day logic
+                if (!isFreeTime) {
+                    deductA = true;
+                    // If fractional (extent < 1), we deduct 'extent' salary.
+                    // But we add (1-extent) salary.
+                    // Simplified: Add Salary * (1-extent).
                 }
             }
 
-            // Parent B
-            if (!allocB) {
-                grossWorkB += getDailySalary(userProfile.parentB.income);
+            // Add Salary
+            const dailySalA = getDailySalary(userProfile.parentA.income);
+            if (deductA) {
+                const extent = allocA?.extent || 1;
+                grossWorkA += dailySalA * (1 - extent);
             } else {
+                grossWorkA += dailySalA;
+            }
+            grossBenefitA += benefitA;
+
+
+            // Parent B (Same Logic)
+            let deductB = false;
+            let benefitB = 0;
+
+            if (allocB) {
                 const extent = allocB.extent || 1;
-                const workExtent = 1 - extent;
-
-                if (workExtent > 0) {
-                    grossWorkB += getDailySalary(userProfile.parentB.income) * workExtent;
-                }
-
                 if (allocB.type === 'S') {
                     const cappedIncome = Math.min(userProfile.parentB.income, 45000);
-                    grossBenefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
+                    benefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
                     if (userProfile.parentB.hasTopUp) {
-                        grossWorkB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
+                        benefitB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
                     }
                 } else {
-                    grossBenefitB += 180 * extent;
+                    benefitB += 180 * extent;
                 }
+
+                if (!isFreeTime) deductB = true;
             }
+
+            const dailySalB = getDailySalary(userProfile.parentB.income);
+            if (deductB) {
+                const extent = allocB?.extent || 1;
+                grossWorkB += dailySalB * (1 - extent);
+            } else {
+                grossWorkB += dailySalB;
+            }
+            grossBenefitB += benefitB;
         }
 
         // 2. Calculate Net

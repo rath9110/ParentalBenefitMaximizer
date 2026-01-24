@@ -126,7 +126,11 @@ const LandingPage = ({ onDataParsed }) => {
                                 type="number"
                                 placeholder={t('landing.placeholderDouble')}
                                 value={inputs.doubleDays}
-                                onChange={(e) => handleChange('doubleDays', e.target.value)}
+                                onChange={(e) => {
+                                    let val = parseInt(e.target.value) || '';
+                                    if (val > 60) val = 60;
+                                    handleChange('doubleDays', val);
+                                }}
                                 style={{
                                     flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid #8E44AD',
                                     fontSize: '1rem'
