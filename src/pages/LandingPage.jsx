@@ -16,7 +16,9 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
     });
 
     const handleChange = (field, value) => {
-        setInputs(prev => ({ ...prev, [field]: value }));
+        // Enforce strict digit only input
+        const sanitized = value.replace(/[^0-9]/g, '');
+        setInputs(prev => ({ ...prev, [field]: sanitized }));
     };
 
     const handleManualProcess = () => {
@@ -104,7 +106,9 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             <Tooltip text={t('landing.tooltips.lDays')} />
                         </div>
                         <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             placeholder={t('landing.placeholderL')}
                             value={inputs.lDays}
                             onChange={(e) => handleChange('lDays', e.target.value)}
@@ -116,7 +120,7 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                         />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <div className="grid-responsive">
                         {/* Reserved */}
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '4px' }}>
@@ -215,7 +219,7 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             <span>📄</span> Föräldrapenning 2026: Allt om Prisbasbelopp
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Vad är prisbasbeloppet för 2026? Hur påverkar det mitt SGI-tak? Vi svarar på vanliga frågor med schema-stöd för AI.
+                            Vad är prisbasbeloppet för 2026? Hur påverkar det mitt SGI-tak?
                         </p>
                     </li>
                     <li style={{ marginBottom: '1.5rem' }}>

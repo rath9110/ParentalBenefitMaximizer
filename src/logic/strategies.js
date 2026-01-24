@@ -141,6 +141,8 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
                         parentB: { parentId: 'parentB', type: 'S', extent: 1.0 }
                     };
                     usedS += 2; // 1 from each
+                    usedS_A++;
+                    usedS_B++;
                     budgetDouble--;
                     current.setDate(current.getDate() + 1);
                     continue; // Done for this day

@@ -240,7 +240,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
             <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
                 <SEO title="Min Planering - Föräldraledighet.se" />
                 <header style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', background: 'white', zIndex: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <div className="dashboard-header">
                         <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <LanguageToggle />
@@ -248,14 +248,14 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="dashboard-controls">
+                        <div className="dashboard-banks">
                             <div
                                 onClick={() => setActiveType('S')}
                                 style={{
                                     background: activeType === 'S' ? '#e3f2fd' : '#f5f5f5',
                                     border: activeType === 'S' ? '2px solid #2196F3' : '2px solid transparent',
-                                    padding: '0.25rem 0.75rem', borderRadius: '8px', cursor: 'pointer'
+                                    padding: '0.25rem 0.75rem', borderRadius: '8px', cursor: 'pointer', flex: 1
                                 }}
                             >
                                 <div style={{ fontSize: '0.7rem', color: '#666' }}>{t('dashboard.sBank')}</div>
@@ -267,7 +267,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                                 style={{
                                     background: activeType === 'L' ? '#fff3e0' : '#f5f5f5',
                                     border: activeType === 'L' ? '2px solid #FF9800' : '2px solid transparent',
-                                    padding: '0.25rem 0.75rem', borderRadius: '8px', cursor: 'pointer'
+                                    padding: '0.25rem 0.75rem', borderRadius: '8px', cursor: 'pointer', flex: 1
                                 }}
                             >
                                 <div style={{ fontSize: '0.7rem', color: '#666' }}>{t('dashboard.lBank')}</div>
@@ -275,7 +275,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', background: '#eee', padding: '4px', borderRadius: '2rem' }}>
+                        <div style={{ display: 'flex', background: '#eee', padding: '4px', borderRadius: '2rem', justifyContent: 'center' }}>
                             <button
                                 onClick={() => setActiveParent('parentA')}
                                 style={{

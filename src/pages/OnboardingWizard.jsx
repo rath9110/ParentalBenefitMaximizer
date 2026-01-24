@@ -81,7 +81,7 @@ const OnboardingWizard = ({ onComplete }) => {
                     <div className="step-content">
 
                         {/* Child DOB & Municipality */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
+                        <div className="grid-responsive" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
                             <div>
                                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>{t('onboarding.childDob')}</label>
                                 <input
@@ -176,7 +176,7 @@ const OnboardingWizard = ({ onComplete }) => {
                     <div>
                         <h3>{t('onboarding.selectStrategy')}</h3>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                        <div className="grid-responsive" style={{ marginBottom: '2rem' }}>
                             {Object.values(STRATEGIES).map(stratId => {
                                 const details = STRATEGY_DETAILS[stratId];
                                 const isSelected = formData.strategy === stratId;
