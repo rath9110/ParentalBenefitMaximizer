@@ -1,21 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { STRATEGIES, STRATEGY_DETAILS } from '../logic/strategies';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageToggle from '../components/LanguageToggle';
+import { fetchMunicipalities, getFallbackTaxRate } from '../logic/taxService';
 
 const OnboardingWizard = ({ onComplete }) => {
+    const { t } = useLanguage();
     const [step, setStep] = useState(1);
+    const [municipalities, setMunicipalities] = useState([]);
     const [formData, setFormData] = useState({
+        childDob: new Date().toISOString().split('T')[0], // Default today
+        municipality: 'Stockholm', // Default
+        taxRate: 29.82, // Default Stockholm
         parentA: { name: 'You', income: 35000, agreement: 'None', hasTopUp: false },
         parentB: { name: 'Partner', income: 35000, agreement: 'None', hasTopUp: false },
-        strategy: STRATEGIES.BALANCED // Default
+        strategy: STRATEGIES.EQUALITY // Default
     });
+
+    useEffect(() => {
+        const loadMunis = async () => {
+            const list = await fetchMunicipalities();
+            setMunicipalities(list);
+
+            // Set default from list if matching
+            const stockholm = list.find(m => m.name === 'Stockholm');
+            if (stockholm) {
+                setFormData(prev => ({ ...prev, municipality: stockholm.name, taxRate: stockholm.taxRate }));
+            }
+        };
+        loadMunis();
+    }, []);
 
     const updateParent = (parent, field, value) => {
         setFormData(prev => ({
             ...prev,
             [parent]: { ...prev[parent], [field]: value }
         }));
+    };
+
+    const handleMuniChange = (e) => {
+        const name = e.target.value;
+        const muni = municipalities.find(m => m.name === name);
+        if (muni) {
+            setFormData(prev => ({ ...prev, municipality: muni.name, taxRate: muni.taxRate }));
+        }
     };
 
     const nextStep = () => setStep(step + 1);
@@ -26,13 +56,16 @@ const OnboardingWizard = ({ onComplete }) => {
     };
 
     return (
-        <div className="container" style={{ padding: '4rem 1rem', maxWidth: '800px' }}>
-            <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Let's customize your plan</h2>
+        <div className="container" style={{ padding: '4rem 1rem', maxWidth: '800px', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                <LanguageToggle />
+            </div>
+            <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>{t('onboarding.title')}</h2>
 
             {/* Progress Dots */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {[1, 2, 3].map(i => (
+                    {[1, 2].map(i => (
                         <div key={i} style={{
                             width: '10px', height: '10px', borderRadius: '50%',
                             background: i === step ? 'var(--color-primary)' : '#ddd'
@@ -44,14 +77,38 @@ const OnboardingWizard = ({ onComplete }) => {
             <Card>
                 {step === 1 && (
                     <div className="step-content">
-                        <h3>Who are the parents?</h3>
-                        {/* Same as before... reusing previous code structure but omitting for brevity if unchanged? 
-                 Actually, best to keep full file content to avoid "search replace" errors with context. */}
+                        <h3>{t('onboarding.whoAreParents')}</h3>
+
+                        {/* Child DOB & Municipality */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
+                            <div>
+                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>{t('onboarding.childDob')}</label>
+                                <input
+                                    type="date"
+                                    value={formData.childDob}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, childDob: e.target.value }))}
+                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Municipality (Tax)</label>
+                                <select
+                                    value={formData.municipality}
+                                    onChange={handleMuniChange}
+                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                >
+                                    {municipalities.length === 0 && <option>Loading...</option>}
+                                    {municipalities.map(m => (
+                                        <option key={m.name} value={m.name}>{m.name} ({m.taxRate}%)</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
 
                         {/* Parent A */}
                         <div style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
                             <div style={{ marginBottom: '0.5rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Parent A Name</label>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>{t('onboarding.parentAName')}</label>
                                 <input
                                     type="text"
                                     value={formData.parentA.name}
@@ -59,8 +116,8 @@ const OnboardingWizard = ({ onComplete }) => {
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Monthly Income</label>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>{t('onboarding.monthlyIncome')}</label>
                                 <input
                                     type="number"
                                     value={formData.parentA.income}
@@ -68,12 +125,20 @@ const OnboardingWizard = ({ onComplete }) => {
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer', marginTop: '0.5rem' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.parentA.hasTopUp}
+                                    onChange={(e) => updateParent('parentA', 'hasTopUp', e.target.checked)}
+                                />
+                                {t('onboarding.topUp')}
+                            </label>
                         </div>
 
                         {/* Parent B */}
                         <div style={{ marginBottom: '1.5rem' }}>
                             <div style={{ marginBottom: '0.5rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Parent B Name</label>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>{t('onboarding.parentBName')}</label>
                                 <input
                                     type="text"
                                     value={formData.parentB.name}
@@ -81,8 +146,8 @@ const OnboardingWizard = ({ onComplete }) => {
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Monthly Income</label>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>{t('onboarding.monthlyIncome')}</label>
                                 <input
                                     type="number"
                                     value={formData.parentB.income}
@@ -90,78 +155,30 @@ const OnboardingWizard = ({ onComplete }) => {
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer', marginTop: '0.5rem' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.parentB.hasTopUp}
+                                    onChange={(e) => updateParent('parentB', 'hasTopUp', e.target.checked)}
+                                />
+                                {t('onboarding.topUp')}
+                            </label>
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button onClick={nextStep}>Next</Button>
+                            <Button onClick={nextStep}>{t('onboarding.next')}</Button>
                         </div>
                     </div>
                 )}
 
                 {step === 2 && (
                     <div>
-                        <h3>Employer Agreements</h3>
-                        {/* Parent A Agreement */}
-                        <div style={{ marginBottom: '2rem' }}>
-                            <strong style={{ display: 'block', marginBottom: '0.5rem' }}>{formData.parentA.name}</strong>
-                            <select
-                                value={formData.parentA.agreement}
-                                onChange={(e) => updateParent('parentA', 'agreement', e.target.value)}
-                                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc', marginBottom: '0.5rem' }}
-                            >
-                                <option value="None">No Agreement / Unsure</option>
-                                <option value="ITP1">Private Sector (ITP1)</option>
-                                <option value="Other">Other</option>
-                            </select>
-
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={formData.parentA.hasTopUp}
-                                    onChange={(e) => updateParent('parentA', 'hasTopUp', e.target.checked)}
-                                />
-                                Apply "10% Top-up" Calculation
-                            </label>
-                        </div>
-
-                        {/* Parent B Agreement */}
-                        <div style={{ marginBottom: '2rem' }}>
-                            <strong style={{ display: 'block', marginBottom: '0.5rem' }}>{formData.parentB.name}</strong>
-                            <select
-                                value={formData.parentB.agreement}
-                                onChange={(e) => updateParent('parentB', 'agreement', e.target.value)}
-                                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc', marginBottom: '0.5rem' }}
-                            >
-                                <option value="None">No Agreement / Unsure</option>
-                                <option value="ITP1">Private Sector (ITP1)</option>
-                                <option value="Other">Other</option>
-                            </select>
-
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={formData.parentB.hasTopUp}
-                                    onChange={(e) => updateParent('parentB', 'hasTopUp', e.target.checked)}
-                                />
-                                Apply "10% Top-up" Calculation
-                            </label>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Button variant="secondary" onClick={prevStep} style={{ background: 'transparent', color: 'var(--color-text-main)' }}>Back</Button>
-                            <Button onClick={nextStep}>Next</Button>
-                        </div>
-                    </div>
-                )}
-
-                {step === 3 && (
-                    <div>
-                        <h3>Select a Strategy</h3>
+                        <h3>{t('onboarding.selectStrategy')}</h3>
                         <p className="text-muted" style={{ marginBottom: '1.5rem' }}>
-                            Based on your profile, here are optimized templates.
+                            {t('onboarding.strategySubtitle')}
                         </p>
 
-                        <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                             {Object.values(STRATEGIES).map(stratId => {
                                 const details = STRATEGY_DETAILS[stratId];
                                 const isSelected = formData.strategy === stratId;
@@ -174,13 +191,14 @@ const OnboardingWizard = ({ onComplete }) => {
                                             border: `2px solid ${isSelected ? 'var(--color-primary)' : '#eee'}`,
                                             background: isSelected ? '#fdfdfd' : 'white',
                                             borderRadius: '8px', padding: '1rem', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', gap: '1rem'
+                                            display: 'flex', flexDirection: 'column', gap: '0.5rem',
+                                            alignItems: 'flex-start'
                                         }}
                                     >
                                         <div style={{ fontSize: '2rem' }}>{details.icon}</div>
                                         <div>
-                                            <div style={{ fontWeight: 'bold' }}>{details.title}</div>
-                                            <div style={{ fontSize: '0.85rem', color: '#666' }}>{details.description}</div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{t(`onboarding.strategies.${stratId}.title`)}</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#666' }}>{t(`onboarding.strategies.${stratId}.description`)}</div>
                                         </div>
                                     </div>
                                 )
@@ -188,8 +206,8 @@ const OnboardingWizard = ({ onComplete }) => {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Button variant="secondary" onClick={prevStep} style={{ background: 'transparent', color: 'var(--color-text-main)' }}>Back</Button>
-                            <Button variant="action" onClick={finish}>Generate Plan</Button>
+                            <Button variant="secondary" onClick={prevStep} style={{ background: 'transparent', color: 'var(--color-text-main)' }}>{t('onboarding.back')}</Button>
+                            <Button variant="action" onClick={finish}>{t('onboarding.generatePlan')}</Button>
                         </div>
                     </div>
                 )}

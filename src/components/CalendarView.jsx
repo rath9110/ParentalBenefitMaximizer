@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { STATUTORY_CONSTANTS_2026, HOLIDAYS_2026 } from '../config/constants';
+import { useLanguage } from '../context/LanguageContext';
 
 const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = new Date() }) => {
+    const { t, language } = useLanguage();
     const [isDragging, setIsDragging] = useState(false);
     const dragStartDay = useRef(null);
 
@@ -9,6 +11,7 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
     const days = [];
     const totalMonths = 18;
     const current = new Date(startDate);
+    const locale = t('calendar.locale');
 
     // Align to start of week (Monday) ? Or just simple continuous list?
     // Let's do a standard Month-grouped grid for better UX.
@@ -23,11 +26,17 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(year, month, d);
-            const dateStr = dateObj.toISOString().split('T')[0];
+            // Fix: Use local date string construction to avoid UTC timezone shifts (off-by-one errors)
+            const dateStr = [
+                year,
+                String(month + 1).padStart(2, '0'),
+                String(d).padStart(2, '0')
+            ].join('-');
+
             monthDates.push({ dateStr, dateObj, dayOfWeek: dateObj.getDay() });
         }
 
-        days.push({ year, month, name: current.toLocaleString('default', { month: 'long' }), days: monthDates });
+        days.push({ year, month, name: current.toLocaleString(locale, { month: 'long' }), days: monthDates });
         current.setMonth(current.getMonth() + 1);
     }
 
@@ -52,17 +61,23 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
 
     // Colors
     const getDayStyle = (dateStr, dayOfWeek) => {
-        const owner = allocatedDays[dateStr];
+        const owners = allocatedDays[dateStr] || {}; // Now a map
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
         const isHoliday = HOLIDAYS_2026.includes(dateStr);
 
         let bg = 'white';
         let color = '#333';
+        const hasA = owners.parentA;
+        const hasB = owners.parentB;
 
-        if (owner === 'parentA') {
+        if (hasA && hasB) {
+            // Double Day - Split
+            bg = '#4A90E2';
+            color = 'white';
+        } else if (hasA) {
             bg = '#4A90E2'; // Blue
             color = 'white';
-        } else if (owner === 'parentB') {
+        } else if (hasB) {
             bg = '#50E3C2'; // Teal
             color = 'white';
         } else if (isHoliday) {
@@ -72,8 +87,11 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
             color = '#999';
         }
 
+        const isDouble = hasA && hasB;
+
         return {
             backgroundColor: bg,
+            backgroundImage: isDouble ? 'linear-gradient(135deg, #4A90E2 50%, #50E3C2 50%)' : 'none',
             color: color,
             border: '1px solid #eee',
             borderRadius: '4px',
@@ -86,6 +104,8 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
             userSelect: 'none'
         };
     };
+
+    const weekdays = t('calendar.weekdays') || ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
     return (
         <div
@@ -106,7 +126,7 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
                         gap: '4px'
                     }}>
                         {/* Weekday headers for the first month only? Or every month? Every month is clearer */}
-                        {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
+                        {weekdays.map(d => (
                             <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', color: '#888', marginBottom: '4px' }}>{d}</div>
                         ))}
 

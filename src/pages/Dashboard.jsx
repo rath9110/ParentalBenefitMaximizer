@@ -4,20 +4,26 @@ import CalendarView from '../components/CalendarView';
 import Button from '../components/Button';
 import { HOLIDAYS_2026 } from '../config/constants';
 import { generateStrategyPattern } from '../logic/strategies';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageToggle from '../components/LanguageToggle';
+import { calculateAnnualMixedNet } from '../logic/taxCalculator';
 
 const Dashboard = ({ benefitData, userProfile, onReset }) => {
+    const { t } = useLanguage();
     // --- State ---
     // allocatedDays: Record<dateStr, { parentId: string, type: 'S' | 'L' }>
     const [allocatedDays, setAllocatedDays] = useState(() => {
         // Auto-fill logic on init
         if (userProfile && userProfile.strategy) {
-            // CORRECTED CALL: 5 Arguments
+            // CORRECTED CALL: 6 Arguments
             return generateStrategyPattern(
                 userProfile.strategy,
                 new Date(),
                 benefitData?.sDays || 0,
                 benefitData?.lDays || 0,
-                userProfile
+                userProfile,
+                benefitData?.doubleDays || 0,
+                userProfile.childDob
             );
         }
         return {};
@@ -30,6 +36,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
     const totalS = benefitData?.sDays || 0;
     const totalL = benefitData?.lDays || 0;
     const reservedS = benefitData?.reservedDays || 0;
+    const plannedDouble = benefitData?.doubleDays || 0;
 
     const counts = useMemo(() => {
         let usedS = 0;
@@ -37,87 +44,163 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
         let usedS_Partner = 0;
 
         Object.entries(allocatedDays).forEach(([dateStr, val]) => {
-            const date = new Date(dateStr);
-            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+            // Robust parsing: "2026-01-01" -> 2026, 0, 1
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const date = new Date(y, m - 1, d); // Local midnight
+            const dayOfWeek = date.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
             const isHoliday = HOLIDAYS_2026.includes(dateStr);
 
-            if (!isWeekend && !isHoliday) {
-                if (val.type === 'S') {
-                    usedS++;
-                    if (val.parentId === 'parentB') usedS_Partner++;
+            if (isHoliday || isWeekend) return; // Don't count holidays OR weekends towards quota
+
+            // val is { parentA: {type: 'S'}, parentB: {type: 'S'} }
+            Object.values(val).forEach(allocation => {
+                const amount = allocation.extent || 1;
+                if (allocation.type === 'S') {
+                    usedS += amount;
+                    if (allocation.parentId === 'parentB') usedS_Partner += amount;
                 }
-                if (val.type === 'L') usedL++;
-            }
+                if (allocation.type === 'L') usedL += amount;
+            });
         });
 
-        return { usedS, usedL, usedS_Partner };
+        // Round to 1 decimal for display
+        return {
+            usedS: Math.round(usedS * 10) / 10,
+            usedL: Math.round(usedL * 10) / 10,
+            usedS_Partner: Math.round(usedS_Partner * 10) / 10
+        };
     }, [allocatedDays]);
 
-    const sLeft = totalS - counts.usedS;
-    const lLeft = totalL - counts.usedL;
+    const sLeft = Math.round((totalS - counts.usedS) * 10) / 10;
+    const lLeft = Math.round((totalL - counts.usedL) * 10) / 10;
     const partnerMaxS = Math.max(0, totalS - reservedS);
-    const partnerSLeft = partnerMaxS - counts.usedS_Partner;
+    const partnerSLeft = Math.round((partnerMaxS - counts.usedS_Partner) * 10) / 10;
 
-    // Household Net Calculation
+    // Household Net Calculation (Annualized Estimate)
     const calculateHouseholdNet = () => {
-        let totalNetAnnual = 0;
+        // 1. Aggregate Year 1 Gross Income for each Parent
+        let grossWorkA = 0;
+        let grossBenefitA = 0;
+        let grossWorkB = 0;
+        let grossBenefitB = 0;
 
-        const getDailyValues = (parent, allocation) => {
-            const dailyGross = (parent.income * 12) / 365;
-            if (!allocation) {
-                return dailyGross * 0.75;
-            } else {
-                let dailyRate = 0;
-                if (allocation.type === 'S') {
-                    const cappedIncome = Math.min(parent.income, 45000);
-                    const benefitGross = (cappedIncome * 12 * 0.8) / 365;
-                    dailyRate = benefitGross * 0.7;
-                    if (parent.hasTopUp) {
-                        dailyRate += (parent.income * 12 * 0.1) / 365 * 0.7;
-                    }
-                } else {
-                    dailyRate = 180 * 0.7;
-                }
-                return dailyRate;
-            }
-        };
+        // Helper to get daily salary rate
+        const getDailySalary = (income) => (income * 12) / 365;
 
         const today = new Date();
+        // Loop 1 year from now
         for (let i = 0; i < 365; i++) {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
             const dStr = d.toISOString().split('T')[0];
+            const allocationMap = allocatedDays[dStr];
 
-            const allocation = allocatedDays[dStr];
-            const allocA = allocation?.parentId === 'parentA' ? allocation : null;
-            const allocB = allocation?.parentId === 'parentB' ? allocation : null;
+            const allocA = allocationMap?.parentA || null;
+            const allocB = allocationMap?.parentB || null;
 
-            totalNetAnnual += getDailyValues(userProfile.parentA, allocA);
-            totalNetAnnual += getDailyValues(userProfile.parentB, allocB);
+            // Parent A
+            if (!allocA) {
+                // Working 100%
+                grossWorkA += getDailySalary(userProfile.parentA.income);
+            } else {
+                const extent = allocA.extent || 1;
+                const workExtent = 1 - extent; // If 0.125 extent, working 0.875?
+                // Assumption: If allocated, you work the rest?
+                // Yes, "Part-Time Transition" -> 75% work, 0.25 benefit.
+
+                if (workExtent > 0) {
+                    grossWorkA += getDailySalary(userProfile.parentA.income) * workExtent;
+                }
+
+                if (allocA.type === 'S') {
+                    // Benefit S
+                    const cappedIncome = Math.min(userProfile.parentA.income, 45000);
+                    grossBenefitA += ((cappedIncome * 12 * 0.8) / 365) * extent;
+
+                    // Top Up (Salary) - Applies to Benefit part?
+                    // Usually top up is % of salary gap.
+                    // Let's assume TopUp only applies if "On Leave".
+                    if (userProfile.parentA.hasTopUp) {
+                        grossWorkA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
+                    }
+                } else {
+                    // Benefit L
+                    grossBenefitA += 180 * extent;
+                }
+            }
+
+            // Parent B
+            if (!allocB) {
+                grossWorkB += getDailySalary(userProfile.parentB.income);
+            } else {
+                const extent = allocB.extent || 1;
+                const workExtent = 1 - extent;
+
+                if (workExtent > 0) {
+                    grossWorkB += getDailySalary(userProfile.parentB.income) * workExtent;
+                }
+
+                if (allocB.type === 'S') {
+                    const cappedIncome = Math.min(userProfile.parentB.income, 45000);
+                    grossBenefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
+                    if (userProfile.parentB.hasTopUp) {
+                        grossWorkB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
+                    }
+                } else {
+                    grossBenefitB += 180 * extent;
+                }
+            }
         }
-        return Math.round(totalNetAnnual / 12);
+
+        // 2. Calculate Net
+        const taxRate = userProfile.taxRate || 32.0;
+        const netA = calculateAnnualMixedNet(grossWorkA, grossBenefitA, taxRate);
+        const netB = calculateAnnualMixedNet(grossWorkB, grossBenefitB, taxRate);
+
+        return Math.round((netA + netB) / 12);
     };
 
     const scorecardNet = useMemo(() => calculateHouseholdNet(), [allocatedDays, userProfile]);
 
     const handleToggleDay = (dateStr, parentId) => {
         setAllocatedDays(prev => {
-            const current = prev[dateStr];
-            const newMap = { ...prev };
+            const currentDayMap = prev[dateStr] || {};
+            // currentDayMap is { parentA: {...}, parentB: {...} } or empty
 
-            if (current && current.parentId === parentId) {
-                delete newMap[dateStr];
+            const newMap = { ...prev };
+            const parentAlloc = currentDayMap[parentId];
+
+            if (parentAlloc) {
+                // Determine if we are just removing THIS parent's allocation
+                const newDayMap = { ...currentDayMap };
+                delete newDayMap[parentId];
+
+                if (Object.keys(newDayMap).length === 0) {
+                    delete newMap[dateStr];
+                } else {
+                    newMap[dateStr] = newDayMap;
+                }
             } else {
+                // Adding allocation
                 if (activeType === 'S') {
                     if (sLeft <= 0) return prev;
                     if (parentId === 'parentB' && partnerSLeft <= 0) {
-                        alert(`Partner limit reached! ${reservedS} days reserved.`);
+                        alert(t('dashboard.partnerLimit').replace('{days}', reservedS));
                         return prev;
                     }
                 } else {
                     if (lLeft <= 0) return prev;
+                    // Double day constraint check for L-level (must have 180 S first) is too complex for this click handler currently
                 }
-                newMap[dateStr] = { parentId: parentId, type: activeType };
+
+                // Check double day limit? 
+                // We'll leave it loose for now (user can overdraw into double days) but visually track it?
+
+                newMap[dateStr] = {
+                    ...currentDayMap,
+                    [parentId]: { parentId, type: activeType }
+                };
             }
             return newMap;
         });
@@ -127,8 +210,11 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
             <header style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', background: 'white', zIndex: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>FöräldraOptimizer</h2>
-                    <Button onClick={onReset} style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} variant="secondary">Reset</Button>
+                    <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <LanguageToggle />
+                        <Button onClick={onReset} style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} variant="secondary">{t('dashboard.reset')}</Button>
+                    </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
@@ -141,7 +227,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                                 padding: '0.25rem 0.75rem', borderRadius: '8px', cursor: 'pointer'
                             }}
                         >
-                            <div style={{ fontSize: '0.7rem', color: '#666' }}>S-BANK</div>
+                            <div style={{ fontSize: '0.7rem', color: '#666' }}>{t('dashboard.sBank')}</div>
                             <div style={{ fontWeight: 'bold', color: sLeft < 0 ? 'red' : '#333' }}>{sLeft}</div>
                         </div>
 
@@ -153,7 +239,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                                 padding: '0.25rem 0.75rem', borderRadius: '8px', cursor: 'pointer'
                             }}
                         >
-                            <div style={{ fontSize: '0.7rem', color: '#666' }}>L-BANK</div>
+                            <div style={{ fontSize: '0.7rem', color: '#666' }}>{t('dashboard.lBank')}</div>
                             <div style={{ fontWeight: 'bold', color: lLeft < 0 ? 'red' : '#333' }}>{lLeft}</div>
                         </div>
                     </div>
@@ -182,7 +268,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                             {userProfile.parentB.name}
                             {activeParent === 'parentB' && activeType === 'S' && (
                                 <span style={{ fontSize: '0.7rem', display: 'block', fontWeight: 'normal', opacity: 0.8 }}>
-                                    ({partnerSLeft} left)
+                                    ({partnerSLeft} {t('landing.daysLeft')})
                                 </span>
                             )}
                         </button>
@@ -195,15 +281,13 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
 
                     <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <p className="text-muted" style={{ fontSize: '0.9rem' }}>
-                            Painting <strong>{activeType}-Days</strong> for <strong>{activeParent === 'parentA' ? userProfile.parentA.name : userProfile.parentB.name}</strong>
+                            {t('dashboard.painting')} <strong>{activeType}{t('dashboard.daysFor')}</strong> <strong>{activeParent === 'parentA' ? userProfile.parentA.name : userProfile.parentB.name}</strong>
                         </p>
                     </div>
 
                     <Card>
                         <CalendarView
-                            allocatedDays={Object.fromEntries(
-                                Object.entries(allocatedDays).map(([k, v]) => [k, v.parentId])
-                            )}
+                            allocatedDays={allocatedDays}
                             activeParent={activeParent}
                             onToggleDay={handleToggleDay}
                         />
@@ -217,17 +301,17 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 boxShadow: '0 -4px 10px rgba(0,0,0,0.05)', zIndex: 10
             }}>
                 <div>
-                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>Avg. Household Net</div>
+                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>{t('dashboard.avgHouseholdNet')}</div>
                     <div className="text-mono" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{scorecardNet.toLocaleString()} SEK</div>
                 </div>
 
                 <div style={{ textAlign: 'center' }}>
-                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>Allocated</div>
+                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>{t('dashboard.allocated')}</div>
                     <div>S: {counts.usedS} | L: {counts.usedL}</div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                    <Button variant="action">Save Plan</Button>
+                    <Button variant="action">{t('dashboard.savePlan')}</Button>
                 </div>
             </div>
         </div>

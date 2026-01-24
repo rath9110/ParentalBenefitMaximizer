@@ -3,8 +3,9 @@ import LandingPage from './pages/LandingPage';
 import OnboardingWizard from './pages/OnboardingWizard';
 import Dashboard from './pages/Dashboard';
 import './App.css';
+import { LanguageProvider } from './context/LanguageContext';
 
-function App() {
+function AppContent() {
     const [view, setView] = useState('LANDING'); // LANDING, ONBOARDING, DASHBOARD
     const [benefitData, setBenefitData] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
@@ -38,6 +39,14 @@ function App() {
                 />
             )}
         </div>
+    );
+}
+
+function App() {
+    return (
+        <LanguageProvider>
+            <AppContent />
+        </LanguageProvider>
     );
 }
 
