@@ -4,7 +4,7 @@ import Card from '../components/Card';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 
-const LandingPage = ({ onDataParsed }) => {
+const LandingPage = ({ onDataParsed, onNavigate }) => {
     const { t } = useLanguage();
     const [inputs, setInputs] = useState({
         sDays: '',
@@ -150,11 +150,78 @@ const LandingPage = ({ onDataParsed }) => {
                 </div>
             </Card>
 
+            {/* New Articles Section */}
+            <div style={{ marginTop: '4rem', textAlign: 'left', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h3 style={{ fontSize: '1.2rem', color: '#333', marginBottom: '1rem' }}>Spara & Planera</h3>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                    <li style={{ marginBottom: '1.5rem' }}>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('FAQ_2026'); }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <span>📄</span> Föräldrapenning 2026: Allt om Prisbasbelopp
+                        </a>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            Vad är prisbasbeloppet för 2026? Hur påverkar det mitt SGI-tak? Vi svarar på vanliga frågor med schema-stöd för AI.
+                        </p>
+                    </li>
+                    <li style={{ marginBottom: '1.5rem' }}>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('HIGH_INCOME_2026'); }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <span>💰</span> Höginkomsttagarens guide: Optimera din föräldralön och skatt 2026
+                        </a>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            Tjänar du över brytpunkten? Lär dig hur du skyddar din inkomst och planerar skattesmart med "net match".
+                        </p>
+                    </li>
+                    <li style={{ marginBottom: '1.5rem' }}>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('SGI_PROTECTION_2026'); }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <span>👶</span> SGI-skydd efter 1 år: Så undviker du att din ersättning nollas
+                        </a>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            Den kritiska 1-årsdagen och 5-dagarsregeln. Vi förklarar hur du använder "SGI-gardet" för att behålla din ersättning.
+                        </p>
+                    </li>
+                    <li style={{ marginBottom: '1.5rem' }}>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('HOLIDAY_2026'); }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <span>☀️</span> Semester & Föräldrapenning: Maximera din ledighet sommaren 2026
+                        </a>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            Lär dig "sandwich-metoden" och hur du bäst kombinerar semester med föräldradagar för en längre sommar.
+                        </p>
+                    </li>
+                    <li style={{ marginBottom: '1.5rem' }}>
+                        <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('TRANSFER_DAYS_2026'); }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <span>👵</span> Överlåtelse av dagar: Så involverar du mor- och farföräldrar
+                        </a>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
+                            Möjligheten att överlåta dagar till anhöriga. Regler för SGI, pensionärer och hur ni maximerar familjepusslet.
+                        </p>
+                    </li>
+                </ul>
+            </div >
+
             <p
                 style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '2rem' }}
                 dangerouslySetInnerHTML={{ __html: t('landing.tip') }}
             />
-        </div>
+        </div >
     );
 };
 
