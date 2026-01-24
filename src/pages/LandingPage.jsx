@@ -3,6 +3,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
+import SEO from '../components/SEO';
 
 const LandingPage = ({ onDataParsed, onNavigate }) => {
     const { t } = useLanguage();
@@ -36,6 +37,11 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
 
     return (
         <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center', maxWidth: '600px', position: 'relative' }}>
+            <SEO
+                title="Föräldraledighet.se - Verktyg för att maxa dagarna & ekonomin"
+                description="Gratis verktyg för att planera föräldraledighet. Räkna ut din ersättning, fördela dagarna smart och optimera hushållets inkomst 2026."
+                canonical="https://foraldraledighet.se/"
+            />
             <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
                 <LanguageToggle />
             </div>
@@ -215,13 +221,13 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                         </p>
                     </li>
                 </ul>
-            </div >
+            </div>
 
             <p
                 style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '2rem' }}
                 dangerouslySetInnerHTML={{ __html: t('landing.tip') }}
             />
-        </div >
+        </div>
     );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../../../components/Button';
+import SEO from '../../../components/SEO';
 
 const faqSchema = {
     "@context": "https://schema.org",
@@ -35,6 +36,13 @@ const faqSchema = {
 const HighIncomeGuide2026 = ({ onBack }) => {
     return (
         <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-main)' }}>
+            <SEO
+                title="Höginkomsttagare & Föräldraledighet 2026: SGI-tak & Skatteplanering"
+                description="Tjänar du över brytpunkten? Lär dig maximera din föräldrapenning 2026 med våra strategier för höginkomsttagare. Guide till SGI-tak, 10-basbelopp och nettolöneoptimering."
+                canonical="https://foraldraledighet.se/articles/2026/high-income"
+                schema={faqSchema}
+            />
+
             <div style={{ marginBottom: '2rem' }}>
                 <Button onClick={onBack} variant="secondary">← Tillbaka</Button>
             </div>
@@ -143,11 +151,6 @@ const HighIncomeGuide2026 = ({ onBack }) => {
                         </div>
                     ))}
                 </div>
-
-                {/* Structured Data for SEO */}
-                <script type="application/ld+json">
-                    {JSON.stringify(faqSchema)}
-                </script>
             </article>
 
             <footer style={{ marginTop: '4rem', textAlign: 'center', color: '#888', borderTop: '1px solid #eee', paddingTop: '2rem' }}>

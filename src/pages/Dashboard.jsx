@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import Card from '../components/Card';
 import CalendarView from '../components/CalendarView';
 import Button from '../components/Button';
+import SEO from '../components/SEO';
 import { HOLIDAYS_2026 } from '../config/constants';
 import { generateStrategyPattern } from '../logic/strategies';
 import { useLanguage } from '../context/LanguageContext';
@@ -233,6 +234,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+            <SEO title="Min Planering - Föräldraledighet.se" />
             <header style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', background: 'white', zIndex: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>

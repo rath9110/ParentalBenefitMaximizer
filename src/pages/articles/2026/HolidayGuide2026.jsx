@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../../../components/Button';
+import SEO from '../../../components/SEO';
 
 const faqSchema = {
     "@context": "https://schema.org",
@@ -43,6 +44,13 @@ const faqSchema = {
 const HolidayGuide2026 = ({ onBack }) => {
     return (
         <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-main)' }}>
+            <SEO
+                title="Semester & Föräldrapenning 2026: Så maxar du sommaren"
+                description="Planera sommaren 2026 smart! Sandwichen-metoden, semesterdagar vs föräldradagar och regler för semesterlönegrundande tid. Maximera din ledighet med vår guide."
+                canonical="https://foraldraledighet.se/articles/2026/holidays"
+                schema={faqSchema}
+            />
+
             <div style={{ marginBottom: '2rem' }}>
                 <Button onClick={onBack} variant="secondary">← Tillbaka</Button>
             </div>
@@ -126,11 +134,6 @@ const HolidayGuide2026 = ({ onBack }) => {
                         </div>
                     ))}
                 </div>
-
-                {/* Structured Data for SEO */}
-                <script type="application/ld+json">
-                    {JSON.stringify(faqSchema)}
-                </script>
             </article>
 
             <footer style={{ marginTop: '4rem', textAlign: 'center', color: '#888', borderTop: '1px solid #eee', paddingTop: '2rem' }}>

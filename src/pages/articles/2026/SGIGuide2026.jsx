@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../../../components/Button';
+import SEO from '../../../components/SEO';
 
 const faqSchema = {
     "@context": "https://schema.org",
@@ -43,6 +44,13 @@ const faqSchema = {
 const SGIGuide2026 = ({ onBack }) => {
     return (
         <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-main)' }}>
+            <SEO
+                title="Skydda SGI 2026: 5-dagarsregeln & 1-årsdagen"
+                description="Missar du 1-årsdagen kan det kosta tusenlappar. Allt om SGI-skydd, 5-dagarsregeln och hur du undviker att nolla din inkomst under föräldraledigheten 2026."
+                canonical="https://foraldraledighet.se/articles/2026/sgi-protection"
+                schema={faqSchema}
+            />
+
             <div style={{ marginBottom: '2rem' }}>
                 <Button onClick={onBack} variant="secondary">← Tillbaka</Button>
             </div>
@@ -138,11 +146,6 @@ const SGIGuide2026 = ({ onBack }) => {
                         </div>
                     ))}
                 </div>
-
-                {/* Structured Data for SEO */}
-                <script type="application/ld+json">
-                    {JSON.stringify(faqSchema)}
-                </script>
             </article>
 
             <footer style={{ marginTop: '4rem', textAlign: 'center', color: '#888', borderTop: '1px solid #eee', paddingTop: '2rem' }}>

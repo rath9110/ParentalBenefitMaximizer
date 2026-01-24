@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../../../components/Button';
+import SEO from '../../../components/SEO';
 
 const faqSchema = {
     "@context": "https://schema.org",
@@ -43,6 +44,13 @@ const faqSchema = {
 const UltimateGuidePrisbasbelopp = ({ onBack }) => {
     return (
         <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-main)' }}>
+            <SEO
+                title="Föräldrapenning 2026: Prisbasbelopp & Ersättningsnivåer (Guide)"
+                description="Aktuella belopp för 2026! Prisbasbeloppet är 59 200 kr. Se hur det påverkar din maxersättning, SGI-taket och lägstanivådagarna."
+                canonical="https://foraldraledighet.se/articles/2026/guide"
+                schema={faqSchema}
+            />
+
             <div style={{ marginBottom: '2rem' }}>
                 <Button onClick={onBack} variant="secondary">← Tillbaka</Button>
             </div>
@@ -145,11 +153,6 @@ const UltimateGuidePrisbasbelopp = ({ onBack }) => {
                         </div>
                     ))}
                 </div>
-
-                {/* Structured Data for SEO */}
-                <script type="application/ld+json">
-                    {JSON.stringify(faqSchema)}
-                </script>
             </article>
 
             <footer style={{ marginTop: '4rem', textAlign: 'center', color: '#888', borderTop: '1px solid #eee', paddingTop: '2rem' }}>

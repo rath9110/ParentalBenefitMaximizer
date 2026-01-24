@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import SEO from '../components/SEO';
 import { STRATEGIES, STRATEGY_DETAILS } from '../logic/strategies';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
@@ -57,6 +58,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
     return (
         <div className="container" style={{ padding: '4rem 1rem', maxWidth: '800px', position: 'relative' }}>
+            <SEO title="Kom igång - Skapa din plan" />
             <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
                 <LanguageToggle />
             </div>
