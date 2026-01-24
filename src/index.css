@@ -1,15 +1,27 @@
 :root {
-    /* Color Palette - "Calm & Confident" */
-    --color-primary: #4A6741;
-    /* Nordic Sage */
-    --color-action: #FF8C42;
-    /* Sunrise Orange */
-    --color-alert: #D63348;
-    /* Swedish Red */
-    --color-bg: #F9F7F2;
-    /* Soft Bone */
-    --color-text-main: #2C3E50;
-    --color-text-muted: #6C7A89;
+    /* Color Palette - "Monochromatic Navy" */
+    --color-primary: #1a2b3c;
+    /* Deep Navy */
+    --color-primary-light: #2c455b;
+    /* Lighter Navy */
+    --color-primary-dark: #0f1a24;
+    /* Darker Navy */
+
+    --color-action: #FFC107;
+    /* Professional Amber/Gold for CTAs */
+    --color-action-hover: #FFD54F;
+
+    --color-alert: #D32F2F;
+    /* Standard Alert Red */
+
+    --color-bg: #F8F9FA;
+    /* Clean White/Grey */
+    --color-surface: #FFFFFF;
+
+    --color-text-main: #1a2b3c;
+    /* Navy Black */
+    --color-text-muted: #546e7a;
+    /* Blue Grey */
     --color-white: #FFFFFF;
 
     /* Typography */
@@ -106,4 +118,34 @@ h6 {
 .btn:hover {
     transform: translateY(-1px);
     filter: brightness(110%);
+}
+
+.print-only {
+    display: none !important;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+
+    .modal-overlay {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        background: none !important;
+        display: block !important;
+    }
+
+    .modal-content {
+        position: static !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
 }

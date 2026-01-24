@@ -3,6 +3,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
+import Tooltip from '../components/Tooltip';
 import SEO from '../components/SEO';
 
 const LandingPage = ({ onDataParsed, onNavigate }) => {
@@ -36,98 +37,118 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
     };
 
     return (
-        <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center', maxWidth: '600px', position: 'relative' }}>
+        <div style={{ padding: '2rem 1rem', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <SEO
-                title="Föräldraledighet.se - Verktyg för att maxa dagarna & ekonomin"
-                description="Gratis verktyg för att planera föräldraledighet. Räkna ut din ersättning, fördela dagarna smart och optimera hushållets inkomst 2026."
+                title="Föräldraledighet.se - Optimera din föräldraledighet 2026"
+                description="Beräkna och optimera din föräldraledighet. Få ut mer tid och pengar med smarta strategier för 2026."
                 canonical="https://foraldraledighet.se/"
             />
-            <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+
+            {/* Utility Bar */}
+            <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
                 <LanguageToggle />
             </div>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
-                {t('landing.title')}
-            </h1>
-            <p
-                style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '3rem' }}
-                dangerouslySetInnerHTML={{ __html: t('landing.subtitle') }}
-            />
 
-            <Card>
-                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ textAlign: 'center', maxWidth: '600px', marginBottom: '2rem' }}>
+                <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--color-primary)', fontFamily: 'var(--font-heading)' }}>
+                    {t('landing.title')}
+                </h1>
+                <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)' }}>
+                    {t('landing.subtitle')}
+                </p>
+            </div>
+
+            {/* Focus Card */}
+            <Card style={{
+                padding: '2.5rem',
+                maxWidth: '600px',
+                width: '100%',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)', // Slate shadow
+                border: '1px solid var(--color-border)'
+            }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                     {/* S-Level */}
                     <div>
-                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                            {t('landing.sLevel')}
-                        </label>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <input
-                                type="number"
-                                placeholder={t('landing.placeholderS')}
-                                value={inputs.sDays}
-                                onChange={(e) => handleChange('sDays', e.target.value)}
-                                style={{
-                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc',
-                                    fontSize: '1rem'
-                                }}
-                            />
-                            <span className="text-muted">{t('landing.daysLeft')}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '8px' }}>
+                            <label style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--color-primary)' }}>
+                                {t('landing.sLevel')}
+                            </label>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                                {t('landing.sLevelSecondary')}
+                            </span>
+                            <Tooltip text={t('landing.tooltips.sDays')} />
                         </div>
+                        <input
+                            type="number"
+                            placeholder={t('landing.placeholderS')}
+                            value={inputs.sDays}
+                            onChange={(e) => handleChange('sDays', e.target.value)}
+                            style={{
+                                width: '100%', padding: '0.8rem 1rem', borderRadius: 'var(--radius-sm)',
+                                border: '1px solid var(--color-border)', fontSize: '1.1rem',
+                                color: 'var(--color-primary)', backgroundColor: 'var(--color-bg)'
+                            }}
+                        />
                     </div>
 
                     {/* L-Level */}
                     <div>
-                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                            {t('landing.lLevel')}
-                        </label>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <input
-                                type="number"
-                                placeholder={t('landing.placeholderL')}
-                                value={inputs.lDays}
-                                onChange={(e) => handleChange('lDays', e.target.value)}
-                                style={{
-                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc',
-                                    fontSize: '1rem'
-                                }}
-                            />
-                            <span className="text-muted">{t('landing.daysLeft')}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '8px' }}>
+                            <label style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--color-primary)' }}>
+                                {t('landing.lLevel')}
+                            </label>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                                {t('landing.lLevelSecondary')}
+                            </span>
+                            <Tooltip text={t('landing.tooltips.lDays')} />
                         </div>
+                        <input
+                            type="number"
+                            placeholder={t('landing.placeholderL')}
+                            value={inputs.lDays}
+                            onChange={(e) => handleChange('lDays', e.target.value)}
+                            style={{
+                                width: '100%', padding: '0.8rem 1rem', borderRadius: 'var(--radius-sm)',
+                                border: '1px solid var(--color-border)', fontSize: '1.1rem',
+                                color: 'var(--color-primary)', backgroundColor: 'var(--color-bg)'
+                            }}
+                        />
                     </div>
 
-                    {/* Reserved */}
-                    <div>
-                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-alert)' }}>
-                            {t('landing.reserved')}
-                        </label>
-                        <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>
-                            {t('landing.reservedDesc')}
-                        </p>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        {/* Reserved */}
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '4px' }}>
+                                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--color-primary)' }}>
+                                    {t('landing.reserved')}
+                                </label>
+                                <Tooltip text={t('landing.tooltips.reserved')} />
+                            </div>
                             <input
                                 type="number"
                                 placeholder={t('landing.placeholderReserved')}
                                 value={inputs.reservedDays}
                                 onChange={(e) => handleChange('reservedDays', e.target.value)}
                                 style={{
-                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-alert)',
-                                    fontSize: '1rem'
+                                    width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid var(--color-border)', fontSize: '1rem',
+                                    color: 'var(--color-primary)', backgroundColor: 'var(--color-bg)'
                                 }}
                             />
-                            <span className="text-muted">{t('landing.daysLocked')}</span>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                                {t('landing.reservedSecondary')}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Double Days (New) */}
-                    <div>
-                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: '#8E44AD' }}>
-                            {t('landing.doubleDays')}
-                        </label>
-                        <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>
-                            {t('landing.doubleDaysDesc')}
-                        </p>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {/* Double Days */}
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '4px' }}>
+                                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--color-primary)' }}>
+                                    {t('landing.doubleDays')}
+                                </label>
+                                <Tooltip text={t('landing.tooltips.double')} />
+                            </div>
                             <input
                                 type="number"
                                 placeholder={t('landing.placeholderDouble')}
@@ -138,18 +159,42 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                                     handleChange('doubleDays', val);
                                 }}
                                 style={{
-                                    flex: 1, padding: '0.8rem', borderRadius: 'var(--radius-sm)', border: '1px solid #8E44AD',
-                                    fontSize: '1rem'
+                                    width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid var(--color-border)', fontSize: '1rem',
+                                    color: 'var(--color-primary)', backgroundColor: 'var(--color-bg)'
                                 }}
                             />
-                            <span className="text-muted">
-                                {t('landing.daysCount').replace('{total}', (parseInt(inputs.doubleDays) || 0) * 2)}
-                            </span>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                                {t('landing.doubleDaysSecondary')}
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button onClick={handleManualProcess} variant="action" disabled={!inputs.sDays && !inputs.lDays}>
+                    {/* Helper Link */}
+                    <div style={{ textAlign: 'center', marginTop: '-0.5rem' }}>
+                        <a
+                            href='https://www.forsakringskassan.se/privatperson/logga-in-pa-mina-sidor#/?goto=%2Fprivatperson%2Fmina-sidor%2Falla-e-tjanster%2Fmin-foraldrapenning'
+                            target='_blank'
+                            style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textDecoration: 'underline' }}
+                        >
+                            {t('landing.externalHelper') || "Hitta dina dagar på Mina Sidor (Försäkringskassan)"}
+                        </a>
+                    </div>
+
+                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+                        <Button
+                            onClick={handleManualProcess}
+                            variant="primary"
+                            disabled={!inputs.sDays && !inputs.lDays}
+                            style={{
+                                padding: '1rem 0',
+                                width: '100%',
+                                maxWidth: '300px',
+                                fontSize: '1.2rem',
+                                backgroundColor: 'var(--color-action)',
+                                boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                            }}
+                        >
                             {t('landing.continue')}
                         </Button>
                     </div>
@@ -157,8 +202,9 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
             </Card>
 
             {/* New Articles Section */}
-            <div style={{ marginTop: '4rem', textAlign: 'left', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
-                <h3 style={{ fontSize: '1.2rem', color: '#333', marginBottom: '1rem' }}>Spara & Planera</h3>
+            <div style={{ marginTop: '6rem', textAlign: 'left', borderTop: '1px solid #eee', paddingTop: '3rem' }}>
+                <h3 style={{ fontSize: '2rem', color: 'var(--color-primary)', marginBottom: '0.5rem' }}>{t('landing.strategiesTitle')}</h3>
+                <p style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', marginBottom: '2rem' }}>{t('landing.strategiesIntro')}</p>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
                     <li style={{ marginBottom: '1.5rem' }}>
                         <a
@@ -222,11 +268,6 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                     </li>
                 </ul>
             </div>
-
-            <p
-                style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '2rem' }}
-                dangerouslySetInnerHTML={{ __html: t('landing.tip') }}
-            />
         </div>
     );
 };

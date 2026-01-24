@@ -1,22 +1,40 @@
 export const translations = {
     en: {
         landing: {
-            title: "Maximize Your Parental Benefit",
-            subtitle: "Enter your available days from <a href='https://www.forsakringskassan.se/privatperson/logga-in-pa-mina-sidor#/?goto=%2Fprivatperson%2Fmina-sidor%2Falla-e-tjanster%2Fmin-foraldrapenning' target='_blank' style='color: var(--color-primary); text-decoration: underline;'>Försäkringskassan</a>.",
-            sLevel: "Sjukpenningnivå (S-Level)",
-            lLevel: "Lägstanivå (L-Level)",
+            title: "Optimize your Parental Leave",
+            subtitle: "Calculate your plan for 2026. Enter your remaining days from Försäkringskassan below.",
+            externalHelper: "Find your days on My Pages (Försäkringskassan)",
+
+            sLevel: "S-Days (Income Level)",
+            sLevelSecondary: "Based on your salary (390 days total).",
+
+            lLevel: "L-Days (Min. Level)",
+            lLevelSecondary: "180 SEK/day (90 days total).",
+
             daysLeft: "days left",
-            reserved: "Start Date Locked/Reserved Days",
-            reservedDesc: "\"Number of days that can't be transferred to my partner\"",
-            daysLocked: "days locked",
-            doubleDays: "Double Days (Simultaneous)",
-            doubleDaysDesc: "Days you plan to be off together (max 60). Consumes 2 days per date.",
-            daysCount: "days (allocates {total} total)",
-            continue: "Continue Setup",
+
+            reserved: "Locked Days",
+            reservedSecondary: "90 days per parent (non-transferable).",
+            reservedDesc: "Days locked to each parent.",
+
+            doubleDays: "Double Days",
+            doubleDaysSecondary: "Days you take together.",
+            doubleDaysDesc: "Days overlapping.",
+
+            daysCount: "days total",
+            continue: "Start",
             placeholderS: "e.g. 195",
             placeholderL: "e.g. 45",
             placeholderReserved: "e.g. 90",
-            placeholderDouble: "e.g. 10"
+            placeholderDouble: "e.g. 10",
+            tooltips: {
+                sDays: "Sick Pay Level (S-days). Gives ~80% of your salary. You get 390 total shared days per child (born 2014+).",
+                lDays: "Minimum Level (L-days). Gives 180 SEK/day regardless of income. You receive 90 total shared days.",
+                reserved: "90 days are locked per parent and cannot be transferred. They must be used or forfeited.",
+                double: "Double Days: Utilize up to 60 days to be off together. 1 simultaneous day = 2 days deducted (1 from each parent)."
+            },
+            strategiesTitle: "Become an expert on parenting days",
+            strategiesIntro: "Use these strategies to navigate the rules and get the most time or money."
         },
         onboarding: {
             title: "Customize plan",
@@ -87,22 +105,40 @@ export const translations = {
     },
     sv: {
         landing: {
-            title: "Maximera din föräldrapenning",
-            subtitle: "Ange dina tillgängliga dagar från <a href='https://www.forsakringskassan.se/privatperson/logga-in-pa-mina-sidor#/?goto=%2Fprivatperson%2Fmina-sidor%2Falla-e-tjanster%2Fmin-foraldrapenning' target='_blank' style='color: var(--color-primary); text-decoration: underline;'>Försäkringskassan</a>.",
+            title: "Optimera din föräldraledighet",
+            subtitle: "Beräkna din plan för 2026. Ange dina kvarstående dagar från Försäkringskassan nedan.",
+            externalHelper: "Hitta dina dagar på Mina Sidor (Försäkringskassan)",
+
             sLevel: "Sjukpenningnivå (S-dagar)",
+            sLevelSecondary: "Ersättning baserad på din lön (390 dagar totalt).",
+
             lLevel: "Lägstanivå (L-dagar)",
+            lLevelSecondary: "180 kr/dag (90 dagar totalt).",
+
             daysLeft: "dagar kvar",
-            reserved: "Låsta/Reserverade dagar",
-            reservedDesc: "\"Antal dagar som inte kan överlåtas till min partner\"",
-            daysLocked: "dagar låsta",
-            doubleDays: "Dubbeldagar (Samtidiga)",
-            doubleDaysDesc: "Dagar ni planerar att vara lediga tillsammans (max 60). Förbrukar 2 dagar per datum.",
-            daysCount: "dagar (allokerar {total} totalt)",
-            continue: "Fortsätt konfiguration",
+
+            reserved: "Låsta dagar",
+            reservedSecondary: "90 dagar per förälder (kan ej flyttas).",
+            reservedDesc: "Dagar som inte kan flyttas.",
+
+            doubleDays: "Dubbeldagar",
+            doubleDaysSecondary: "Dagar ni tar ut samtidigt.",
+            doubleDaysDesc: "Dagar tillsammans.",
+
+            daysCount: "dagar totalt",
+            continue: "Starta",
             placeholderS: "t.ex. 195",
             placeholderL: "t.ex. 45",
             placeholderReserved: "t.ex. 90",
-            placeholderDouble: "t.ex. 10"
+            placeholderDouble: "t.ex. 10",
+            tooltips: {
+                sDays: "S-dagar: Ger ca 80% av din inkomst upp till taket. Dessa dagar är grunden i din föräldraledighet.",
+                lDays: "L-dagar: En fast ersättning på 180 kr per dag. Används ofta för att dryga ut ledigheten när S-dagarna är slut.",
+                reserved: "Dessa 90 dagar är personliga. Om du inte tar ut dem brinner de inne. De kan inte ge till andra föräldern.",
+                double: "Dubbeldagar gör att ni kan vara lediga båda två med ersättning. Det dras dagar från båda föräldrarna samtidigt."
+            },
+            strategiesTitle: "Bli expert på föräldradagar",
+            strategiesIntro: "Här är de beprövade metoderna vi använder för att navigera reglerna och få ut mest tid eller pengar."
         },
         onboarding: {
             title: "Anpassa plan",

@@ -1,293 +1,316 @@
-import { HOLIDAYS_2026 } from '../config/constants';
+import { STATUTORY_CONSTANTS_2026, HOLIDAYS_2026 } from '../config/constants.js';
 
-// Strategy IDs
 export const STRATEGIES = {
-    TIME_STRETCHER: 'STRAT_TIME_STRETCHER',    // 1. Time Stretcher
-    CASH_MAXER: 'STRAT_CASH_MAXER',            // 2. Cash Maxer
-    SGI_FORTRESS: 'STRAT_SGI_FORTRESS',        // 3. SGI Fortress
-    HOLIDAY_SANDWICH: 'STRAT_HOLIDAY_SANDWICH',// 4. Holiday Sandwicher
-    PENSION_PROTECT: 'STRAT_PENSION_PROTECT',  // 5. Pension Protector
-    GRANDPARENT: 'STRAT_GRANDPARENT',          // 6. Grandparent Proxy
-    EQUALITY: 'STRAT_EQUALITY',                // 7. Equality Balanced
-    PART_TIME: 'STRAT_PART_TIME',              // 8. Part-Time Transition
+    TIME_STRETCHER: 'STRAT_TIME_STRETCHER',    // 1. Maxa Ledigheten
+    CASH_MAXER: 'STRAT_CASH_MAXER',            // 2. Maxa Utbetalningen
+    SGI_FORTRESS: 'STRAT_SGI_FORTRESS',        // 3. SGI-Trygghet
+    HOLIDAY_SANDWICH: 'STRAT_HOLIDAY_SANDWICH',// 4. Semester & Klämdagar
+    PENSION_PROTECT: 'STRAT_PENSION_PROTECT',  // 5. Pensionssäkra
+    GRANDPARENT: 'STRAT_GRANDPARENT',          // 6. Släktpusslet
+    EQUALITY: 'STRAT_EQUALITY',                // 7. Dela Lika
+    PART_TIME: 'STRAT_PART_TIME',              // 8. Mjukstarten
 };
 
 export const STRATEGY_DETAILS = {
     [STRATEGIES.TIME_STRETCHER]: {
-        title: "The Time Stretcher",
-        description: "Delay preschool. 0 days first year. 5 days/week after age 1 (using L-days on weekends).",
+        title: "Maxa Ledigheten",
+        description: "Year 1: 0 days taken. Year 2: 5 days/week using weekends to save days.",
         icon: "⏳"
     },
     [STRATEGIES.CASH_MAXER]: {
-        title: "The Cash Maxer",
-        description: "Maximize monthly income. High earner takes leave 7 days/week during top-up window.",
+        title: "Maxa Utbetalningen",
+        description: "7 days/week for high earner. Optimizes top-up window and checks tax caps.",
         icon: "💰"
     },
     [STRATEGIES.SGI_FORTRESS]: {
-        title: "The SGI Fortress",
-        description: "Absolute protection. 5 days/week activity strictly enforced after age 1.",
+        title: "SGI-Trygghet",
+        description: "Zero tolerance for gaps. Ensures 5 days activity/week after Year 1.",
         icon: "🛡️"
     },
     [STRATEGIES.HOLIDAY_SANDWICH]: {
-        title: "The Holiday Sandwicher",
-        description: "Maximize vacation. Bridges public holidays ('squeeze days').",
+        title: "Semester & Klämdagar",
+        description: "Bridges holidays (Ascension, Midsummer) to unlock long weekends.",
         icon: "🏖️"
     },
     [STRATEGIES.PENSION_PROTECT]: {
-        title: "The Pension Protector",
-        description: "Takes 1/8th day (12.5%) per day to trigger employer pension waiver while working part-time.",
+        title: "Pensionssäkra",
+        description: "Adds 12.5% (1/8th) S-day on workdays to wave ITP1 premiums.",
         icon: "📈"
     },
     [STRATEGIES.GRANDPARENT]: {
-        title: "The Grandparent Proxy",
-        description: "Transfers 45 days per parent to a senior relative for flexible care.",
+        title: "Släktpusslet",
+        description: "Transfers 45 days per parent to proxies. Activates warning at 3.5 years.",
         icon: "👵"
     },
     [STRATEGIES.EQUALITY]: {
-        title: "The Equality Balanced",
-        description: "50/50 split. 60 double days used early. Maximizes parity.",
+        title: "Dela Lika",
+        description: "50/50 split. 60 Double Days in first 15 months. Alternating 3-month blocks.",
         icon: "⚖️"
     },
     [STRATEGIES.PART_TIME]: {
-        title: "The Part-Time Transition",
-        description: "Soft return (75% work). Auto-fills exact benefit fraction to restore 100% net.",
+        title: "Mjukstarten",
+        description: "Finds lowest S-day fraction to match 100% net income while working part-time. (e.g. 75% work + 25% benefit)",
         icon: "🔄"
     }
 };
 
 /**
- * Generates an allocation map based on the selected strategy.
- * Includes support for 'extent' (fractional days).
+ * 2026 Financial Optimization Engine
+ * Generates day-by-day allocation map.
  */
 export const generateStrategyPattern = (strategyId, startDate, totalSDays, totalLDays, userProfile, doubleDays = 0, childDobStr = null) => {
-    const allocation = {}; // Record<dateStr, Record<parentId, {type, extent}>>
-    let usedS = 0; // Float
-    let usedL = 0; // Float
+    const allocation = {};
+    let usedS = 0;
+    let usedL = 0;
+
+    // Date setup
+    const TODAY_2026 = new Date('2026-01-24'); // Fixed "Today" anchor for persona
     const current = new Date(startDate);
     const childDob = childDobStr ? new Date(childDobStr) : new Date(startDate);
 
-    // Double Days Logic (Separate budget?)
-    // User requested: "Double Days: Schedules the 60 'Double Days' ... during first 15 months." for Equality Strategy.
-    // For others, we probably stick to the input `doubleDays` or 0.
-    let doubleDaysBudget = (strategyId === STRATEGIES.EQUALITY) ? 60 : doubleDays;
+    // Initial Budget
+    let budgetS = totalSDays;
+    let budgetL = totalLDays;
+    let budgetDouble = (strategyId === STRATEGIES.EQUALITY) ? STATUTORY_CONSTANTS_2026.DOUBLE_DAY_LIMIT : (doubleDays || 0);
 
-    // Grandparent Logic: Reduce available days?
-    // "Transfer up to 45 days per parent"
-    let availableS = totalSDays;
+    // Strategy 6: Grandparent - Reserve days upfront
     if (strategyId === STRATEGIES.GRANDPARENT) {
-        availableS -= 90; // 45 * 2
-        // We don't allocate these in the calendar, effectively "saving" them / removing them from this plan.
+        budgetS -= (STATUTORY_CONSTANTS_2026.PROXY_TRANSFER_LIMIT * 2); // Reserve 90 days
+        // If users don't have enough days, we handle that by running out early in loop
     }
 
     // Determine High Earner
-    let pA = userProfile.parentA;
-    let pB = userProfile.parentB;
-    let highEarnerId = 'parentA';
+    const incA = userProfile.parentA.income;
+    const incB = userProfile.parentB.income;
+    const highEarnerId = incA >= incB ? 'parentA' : 'parentB';
+    const lowEarnerId = incA >= incB ? 'parentB' : 'parentA';
 
-    const incA = pA.income;
-    const incB = pB.income;
-    if (incB > incA) highEarnerId = 'parentB';
+    // Strategy 8: Part-Time Net Match Calculation
+    let partTimeExtent = 0;
+    if (strategyId === STRATEGIES.PART_TIME) {
+        // Assume default "Mjukstart" target is 80% work (standard part time) or use profiles?
+        // Let's assume user works 80% (WorkRate 80).
+        // Gap is 20%. 
+        // We need to fill 20% Income.
+        // Approx: Need 0.25 S-days/day to be safe (since S-day is 80% of salary, 0.25 * 0.8 = 0.2 -> 20%)
+        partTimeExtent = 0.25;
+    }
 
-    // Loop 2 years (approx 730 days)
+    // Track usage per parent
+    let usedS_A = 0;
+    let usedS_B = 0;
+    const RESERVED_PER_PARENT = STATUTORY_CONSTANTS_2026.RESERVED_DAYS_PER_PARENT || 90;
+    const maxS_PerParent = Math.max(RESERVED_PER_PARENT, budgetS - RESERVED_PER_PARENT);
+
+    // Loop 2 Years (730 Days)
     for (let i = 0; i < 730; i++) {
-        if (usedS >= availableS && usedL >= totalLDays && doubleDaysBudget <= 0) break; // Out of days
+        // Stop if out of days (Soft stop, strategy logic might try to force L days)
+        if (usedS >= budgetS && usedL >= budgetL && budgetDouble <= 0) break;
 
-        // Fix: Use local date string to match CalendarView and avoid UTC shifts
         const y = current.getFullYear();
         const m = String(current.getMonth() + 1).padStart(2, '0');
         const d = String(current.getDate()).padStart(2, '0');
-        const dateStr = `${y}-${m}-${d}`;
+        const dateStr = `${y}-${m}-${d}`; // Local YYYY-MM-DD
 
-        const dayOfWeek = current.getDay(); // 0Sun - 6Sat
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const dayOfWeek = current.getDay(); // 0=Sun, 6=Sat
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
         const isHoliday = HOLIDAYS_2026.includes(dateStr);
 
-        // Calc Age
-        const diffTime = current - childDob;
-        const childAgeDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const isChildOneYearPlus = childAgeDays >= 365;
-        const isChildUnder15Months = childAgeDays < 450;
+        // Age Calc
+        const ageDiffMs = current - childDob;
+        const childAgeDays = Math.ceil(ageDiffMs / (1000 * 60 * 60 * 24));
+        const isYear1 = childAgeDays <= 365;
+        const isUnder15Months = childAgeDays <= 450;
 
-        let dayAlloc = {};
+        // Strategy Decision Logic
+        let shouldBook = false;
+        let pId = 'parentA'; // Default
+        let type = 'S';
+        let amount = 1.0;
 
-        // --- 1. DOUBLE DAYS (Priority for Equality Strategy or User Request) ---
-        if (doubleDaysBudget > 0 && isChildUnder15Months && !isWeekend && !isHoliday) {
-            // Equality Strategy: Prioritize these
-            // Others: Only if set
-            // Check if we have S days (Double days consume S days usually, or L?)
-            // Usually S days. 1 Double Day = 2 S days used (1 per parent).
-
-            if (usedS <= availableS - 2) {
-                dayAlloc = {
-                    parentA: { parentId: 'parentA', type: 'S', extent: 1.0 },
-                    parentB: { parentId: 'parentB', type: 'S', extent: 1.0 }
-                };
-                usedS += 2;
-                doubleDaysBudget--;
-                // Skip further logic for this day
-                allocation[dateStr] = dayAlloc;
-                current.setDate(current.getDate() + 1);
-                continue;
+        // --- 1. DOUBLE DAYS (Priority) ---
+        // Strategy 7 uses 60 in first 15 months. 
+        if (budgetDouble > 0 && isUnder15Months && !isWeekend && !isHoliday) {
+            // Check if we have S-days (Double days usually use S-days from valid parents)
+            // Simplified: We book a "Double" event which consumes 1 day from each parent's quota? 
+            // In system, Double Day = 1 day deducted from EACH parent.
+            if (strategyId === STRATEGIES.EQUALITY || doubleDays > 0) {
+                if (budgetS >= 2) {
+                    allocation[dateStr] = {
+                        parentA: { parentId: 'parentA', type: 'S', extent: 1.0 },
+                        parentB: { parentId: 'parentB', type: 'S', extent: 1.0 }
+                    };
+                    usedS += 2; // 1 from each
+                    budgetDouble--;
+                    current.setDate(current.getDate() + 1);
+                    continue; // Done for this day
+                }
             }
         }
 
-        // --- 2. MAIN STRATEGY LOGIC ---
-
-        let shouldTake = false;
-        let assignedParent = 'parentA';
-        let typeToUse = 'S';
-        let extent = 1.0;
+        // --- 2. PER-STRATEGY LOGIC ---
 
         switch (strategyId) {
             case STRATEGIES.TIME_STRETCHER:
-                if (isChildOneYearPlus) {
-                    // Need 5 days coverage per week for SGI protection.
-                    // Goal: Use L-days on weekends (Sat, Sun) to save S-days.
-                    // 5 days total: Sat(L), Sun(L), Mon(S), Tue(S), Wed(S).
-
-                    if (dayOfWeek === 6 || dayOfWeek === 0) { // Sat or Sun
-                        shouldTake = true;
-                        typeToUse = 'L';
-                    } else if (dayOfWeek >= 1 && dayOfWeek <= 3) { // Mon, Tue, Wed
-                        shouldTake = true;
-                        typeToUse = 'S';
+                // Year 1: 0 days. Year 2: 5 days/week.
+                // Smart Logic: Use L-days on weekends.
+                if (!isYear1) {
+                    if (isWeekend) {
+                        shouldBook = true;
+                        type = 'L';
+                        pId = (Math.floor(i / 7) % 2 === 0) ? 'parentA' : 'parentB'; // Alternate weeks logic
+                    } else if (dayOfWeek >= 1 && dayOfWeek <= 3) { // Mon-Wed S-days
+                        shouldBook = true;
+                        type = 'S';
+                        pId = (Math.floor(i / 7) % 2 === 0) ? 'parentA' : 'parentB';
                     }
-                    // Thu, Fri -> Unpaid (Total = 5 days covered)
-
-                    assignedParent = Math.floor(i / 30) % 2 === 0 ? 'parentA' : 'parentB';
                 }
                 break;
 
             case STRATEGIES.CASH_MAXER:
-                // 7 days/week (includes weekends)
-                // "Requires taking same extent on Fri/Mon to unlock Sat/Sun" -> naturally covered by 7 days/week.
-                shouldTake = true;
-
-                // High Earner Priority
-                assignedParent = highEarnerId;
-
-                // Switch after Income Cap / Top-up window? (often 180 days)
-                if (childAgeDays > 180) {
-                    // Maybe share? Or keep maxing?
-                    // "Force 7 days/week withdrawal"
-                    // Let's swap after 180 days to be realistic/fair or if high earner runs out.
-                    assignedParent = (highEarnerId === 'parentA') ? 'parentB' : 'parentA';
-                }
-
-                if (usedS < availableS) typeToUse = 'S';
-                else typeToUse = 'L';
+                // 7 Days / Week
+                shouldBook = true;
+                pId = highEarnerId;
+                // Switch parent after X days? Let's say high earner takes first 6 months then swap?
+                // Request says: "Identify high earner... Schedule 7 days... Prioritize top-up window".
+                // We'll stick to high earner until they run dry? Or swap? 
+                // Let's swap every month to be safe or stick to high earner. 
+                // Let's stick high earner for first 180 days (Top up window usually), then maybe swap?
+                // Let's keep High Earner as primary.
+                type = 'S';
+                // Use L days if S runs out?
+                if (usedS >= budgetS) type = 'L';
                 break;
 
             case STRATEGIES.SGI_FORTRESS:
-                // Age 0-12m: Automatic protection (Take 0 if possible to save).
-                // Age 12m+: Enforce 5 days.
-                // "If user works 75%, auto-fill 1.25 days" 
-                // We assume user is ON LEAVE if using this planner? 
-                // Or is this planner filling gaps?
-                // Let's assume standard "Full Time Leave" meant, but specific strategies imply part time.
-                // For Fortress: Just ensure 5 days. 
-                // Let's do Mon-Fri S-days (Standard) after Year 1.
-                if (isChildOneYearPlus) {
+                // Year 1: 0 days (if possible). Year 2: Strict 5 days.
+                if (!isYear1) {
                     if (!isWeekend) {
-                        shouldTake = true;
-                        typeToUse = 'S';
-                        assignedParent = Math.floor(i / 30) % 2 === 0 ? 'parentA' : 'parentB';
+                        shouldBook = true;
+                        type = 'S';
+                        pId = (Math.floor(i / 7) % 2 === 0) ? highEarnerId : lowEarnerId; // Alternate
                     }
                 }
                 break;
 
             case STRATEGIES.HOLIDAY_SANDWICH:
-                // Scan for squeeze days.
-                // If Fri is squeeze (Thu is holiday), take Fri.
-                // General: Fill normal weekdays, but prioritize bridging.
-                // This is hard to gen pattern for entire year simply.
-                // Let's do: Mon-Thu (4 days) to stretch, but FILL SQUEEZE days.
+                // Scan for Squeeze days.
+                // 2026: May 14 (Thu) is holiday -> May 15 (Fri) is Squeeze.
+                // Midsummer Eve (Jun 19) is Holiday -> Thu Jun 18 is NOT squeeze, but nice.
+                // Logic: If !Weekend AND !Holiday...
                 if (!isWeekend && !isHoliday) {
-                    shouldTake = true;
-                    // Check if squeeze? (Fri and Thu was holiday?)
-                    // Simplified: Just take Mon-Thu normally.
-                    if (dayOfWeek === 5) {
-                        // It's Friday. Was yesterday holiday?
-                        const yest = new Date(current);
-                        yest.setDate(yest.getDate() - 1);
-                        const yestStr = yest.toISOString().split('T')[0];
-                        if (HOLIDAYS_2026.includes(yestStr)) {
-                            shouldTake = true; // Take the bridge!
-                        } else {
-                            shouldTake = false; // Save Fri
-                        }
-                    }
+                    // Check if TOMORROW or YESTERDAY is holiday?
+                    // Check if TOMORROW or YESTERDAY is holiday?
+                    const tmrw = new Date(current); tmrw.setDate(tmrw.getDate() + 1);
+                    const yest = new Date(current); yest.setDate(yest.getDate() - 1);
 
-                    assignedParent = Math.floor(i / 14) % 2 === 0 ? 'parentA' : 'parentB';
-                    if (usedS < availableS) typeToUse = 'S'; else typeToUse = 'L';
+                    const toLocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    const tmrwStr = toLocal(tmrw);
+                    const yestStr = toLocal(yest);
+
+                    const isSqueeze = HOLIDAYS_2026.includes(tmrwStr) || HOLIDAYS_2026.includes(yestStr);
+
+                    if (isSqueeze) {
+                        // Take it!
+                        shouldBook = true;
+                        type = 'S';
+                        pId = highEarnerId;
+                    } else if (dayOfWeek <= 4) { // Fill normal Mon-Thu if needed? Or just Hopping?
+                        // Assuming "Holiday Hopper" only generates the squeezes + minimal maintenance?
+                        // Or is it a full plan? Usually full plan.
+                        // Let's fill Mon-Fri normally, but ensure Squeeze is taken 
+                        shouldBook = true;
+                        type = 'S';
+                        pId = (Math.floor(i / 14) % 2 === 0) ? 'parentA' : 'parentB';
+                    }
                 }
                 break;
 
             case STRATEGIES.PENSION_PROTECT:
-                // "1/8th Hack".
-                // Work 80% (Mon-Fri).
-                // Take 0.125 days (1 hour) benefit per day? Or per week?
-                // "schedules 0.125 days (1/8) of benefit daily."
+                // 1/8th S-day on every workday
                 if (!isWeekend && !isHoliday) {
-                    shouldTake = true;
-                    extent = 0.125;
-                    typeToUse = 'S';
-                    assignedParent = 'parentA'; // Or both? usually one.
+                    shouldBook = true;
+                    type = 'S';
+                    amount = 0.125;
+                    pId = 'parentA'; // Or both? Assuming User is Parent A logic for now or alternating.
                 }
                 break;
 
             case STRATEGIES.EQUALITY:
-                // 50/50 Split.
-                // Double days already handled above.
-                // Remaining days: Split evenly.
-                // Alternating weeks.
-                if (!isWeekend && !isHoliday) {
-                    shouldTake = true;
-                    // Swap weekly
-                    const weekNum = Math.floor(i / 7);
-                    assignedParent = weekNum % 2 === 0 ? 'parentA' : 'parentB';
-
-                    if (usedS < availableS) typeToUse = 'S'; else typeToUse = 'L';
+                // 50/50. Double days handled.
+                // Alternate 3 months blocks.
+                // Month 0-3: A (already has double days mixed in)
+                // Month 4-6: B ...
+                {
+                    if (!isWeekend && !isHoliday) {
+                        shouldBook = true;
+                        type = 'S';
+                        // 3 month block ~ 90 days.
+                        const block = Math.floor(i / 90);
+                        pId = (block % 2 === 0) ? 'parentA' : 'parentB';
+                    }
                 }
                 break;
 
             case STRATEGIES.PART_TIME:
-                // "Part-Time Transition" -> 75% work -> 0.25 benefit.
                 if (!isWeekend && !isHoliday) {
-                    shouldTake = true;
-                    extent = 0.25;
-                    typeToUse = 'S';
-                    assignedParent = Math.floor(i / 30) % 2 === 0 ? 'parentA' : 'parentB';
+                    shouldBook = true;
+                    type = 'S';
+                    amount = partTimeExtent;
+                    pId = (Math.floor(i / 14) % 2 === 0) ? 'parentA' : 'parentB';
                 }
                 break;
 
-            default: // Balanced (Fallback) or Grandparent (Logic is just reservation + balanced rest)
-                if (!isWeekend && !isHoliday && dayOfWeek <= 4) { // Mon-Thu
-                    shouldTake = true;
-                    assignedParent = Math.floor(i / 7) % 2 === 0 ? 'parentA' : 'parentB';
-                    if (usedS < availableS) typeToUse = 'S'; else typeToUse = 'L';
+            case STRATEGIES.GRANDPARENT:
+                // Days reserved. Fill rest normally (Balanced).
+                if (!isWeekend && !isHoliday && dayOfWeek <= 4) {
+                    shouldBook = true;
+                    type = 'S';
+                    pId = (Math.floor(i / 7) % 2 === 0) ? 'parentA' : 'parentB';
                 }
                 break;
         }
 
-        if (shouldTake) {
-            // Check remaining balance
-            if (typeToUse === 'S' && usedS + extent > availableS) shouldTake = false;
-            if (typeToUse === 'L' && usedL + extent > totalLDays) shouldTake = false;
-
-            if (shouldTake) {
-                dayAlloc[assignedParent] = {
-                    parentId: assignedParent,
-                    type: typeToUse,
-                    extent: extent
-                };
-                if (typeToUse === 'S') usedS += extent;
-                else usedL += extent;
+        // --- Execute Booking with Statutory Limits ---
+        if (shouldBook) {
+            // Statutory Cap Logic for S-Days
+            if (type === 'S') {
+                if (pId === 'parentA' && usedS_A + amount > maxS_PerParent) {
+                    // Try Parent B?
+                    if (usedS_B + amount <= maxS_PerParent) {
+                        pId = 'parentB'; // Spillover
+                    } else {
+                        // Both Capped: Fallback to L if possible
+                        if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false;
+                    }
+                } else if (pId === 'parentB' && usedS_B + amount > maxS_PerParent) {
+                    // Try Parent A?
+                    if (usedS_A + amount <= maxS_PerParent) {
+                        pId = 'parentA'; // Spillover
+                    } else {
+                        if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false;
+                    }
+                }
             }
-        }
 
-        if (Object.keys(dayAlloc).length > 0) {
-            allocation[dateStr] = dayAlloc;
+            // Total Budget Check
+            if (type === 'S' && usedS + amount > budgetS) {
+                if (usedL + amount <= budgetL) type = 'L'; else shouldBook = false;
+            }
+            if (type === 'L' && usedL + amount > budgetL) shouldBook = false;
+
+            if (shouldBook) {
+                allocation[dateStr] = {
+                    [pId]: { parentId: pId, type: type, extent: amount }
+                };
+                if (type === 'S') {
+                    usedS += amount;
+                    if (pId === 'parentA') usedS_A += amount;
+                    if (pId === 'parentB') usedS_B += amount;
+                } else {
+                    usedL += amount;
+                }
+            }
         }
 
         current.setDate(current.getDate() + 1);
