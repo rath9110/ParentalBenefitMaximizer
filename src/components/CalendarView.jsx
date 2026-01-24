@@ -114,40 +114,42 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
             onMouseLeave={handleMouseUp}
             style={{ userSelect: 'none' }}
         >
-            {days.map((m, mIdx) => (
-                <div key={`${m.year}-${m.month}`} style={{ marginBottom: '2rem' }}>
-                    <h4 style={{ marginBottom: '0.5rem', textTransform: 'capitalize' }}>
-                        {m.name} {m.year}
-                    </h4>
+            <div className="calendar-main-grid">
+                {days.map((m, mIdx) => (
+                    <div key={`${m.year}-${m.month}`} style={{ breakInside: 'avoid' }}>
+                        <h4 style={{ marginBottom: '0.5rem', textTransform: 'capitalize', fontSize: '1rem', textAlign: 'center' }}>
+                            {m.name} {m.year}
+                        </h4>
 
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(7, 1fr)',
-                        gap: '4px'
-                    }}>
-                        {/* Weekday headers for the first month only? Or every month? Every month is clearer */}
-                        {weekdays.map(d => (
-                            <div key={d} style={{ textAlign: 'center', fontSize: '0.7rem', color: '#888', marginBottom: '4px' }}>{d}</div>
-                        ))}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(7, 1fr)',
+                            gap: '2px'
+                        }}>
+                            {/* Weekday headers */}
+                            {weekdays.map(d => (
+                                <div key={d} style={{ textAlign: 'center', fontSize: '0.65rem', color: '#888', marginBottom: '2px' }}>{d}</div>
+                            ))}
 
-                        {/* Padding for start of month (Monday start) */}
-                        {Array.from({ length: (m.days[0].dayOfWeek + 6) % 7 }).map((_, i) => (
-                            <div key={`pad-${i}`} />
-                        ))}
+                            {/* Padding */}
+                            {Array.from({ length: (m.days[0].dayOfWeek + 6) % 7 }).map((_, i) => (
+                                <div key={`pad-${i}`} />
+                            ))}
 
-                        {m.days.map(d => (
-                            <div
-                                key={d.dateStr}
-                                style={getDayStyle(d.dateStr, d.dayOfWeek)}
-                                onMouseDown={() => handleMouseDown(d.dateStr)}
-                                onMouseEnter={() => handleMouseEnter(d.dateStr)}
-                            >
-                                {d.dateObj.getDate()}
-                            </div>
-                        ))}
+                            {m.days.map(d => (
+                                <div
+                                    key={d.dateStr}
+                                    style={getDayStyle(d.dateStr, d.dayOfWeek)}
+                                    onMouseDown={() => handleMouseDown(d.dateStr)}
+                                    onMouseEnter={() => handleMouseEnter(d.dateStr)}
+                                >
+                                    {d.dateObj.getDate()}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 };

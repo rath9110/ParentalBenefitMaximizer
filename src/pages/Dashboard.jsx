@@ -308,7 +308,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 </header>
 
                 <div style={{ flex: 1, overflowY: 'auto', position: 'relative', background: 'var(--color-bg)' }}>
-                    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+                    <div style={{ padding: '1rem', maxWidth: '1400px', margin: '0 auto' }}>
 
                         <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <p className="text-muted" style={{ fontSize: '0.9rem' }}>
