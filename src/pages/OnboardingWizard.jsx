@@ -79,7 +79,6 @@ const OnboardingWizard = ({ onComplete }) => {
             <Card>
                 {step === 1 && (
                     <div className="step-content">
-                        <h3>{t('onboarding.whoAreParents')}</h3>
 
                         {/* Child DOB & Municipality */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #eee' }}>
@@ -176,9 +175,6 @@ const OnboardingWizard = ({ onComplete }) => {
                 {step === 2 && (
                     <div>
                         <h3>{t('onboarding.selectStrategy')}</h3>
-                        <p className="text-muted" style={{ marginBottom: '1.5rem' }}>
-                            {t('onboarding.strategySubtitle')}
-                        </p>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                             {Object.values(STRATEGIES).map(stratId => {

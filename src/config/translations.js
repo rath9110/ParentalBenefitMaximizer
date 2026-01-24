@@ -20,7 +20,6 @@ export const translations = {
         },
         onboarding: {
             title: "Customize plan",
-            whoAreParents: "Who are the parents?",
             childDob: "Child's Date of Birth",
             parentAName: "Parent A Name",
             monthlyIncome: "Monthly Income (Before Tax)",
@@ -33,40 +32,39 @@ export const translations = {
             back: "Back",
             next: "Next",
             selectStrategy: "Select a Strategy",
-            strategySubtitle: "Based on your profile, here are optimized templates.",
             generatePlan: "Generate Plan",
             strategies: {
                 STRAT_TIME_STRETCHER: {
-                    title: "The Time Stretcher",
-                    description: "Goal: Delay preschool. 0 days first year. 5 days/week after age 1 using L-days on weekends."
+                    title: "Maximize Leave",
+                    description: "Goal: Stay home longest. Save all days year 1. Afterwards, take exactly what's needed to protect your income."
                 },
                 STRAT_CASH_MAXER: {
-                    title: "The Cash Maxer",
-                    description: "Goal: Maximize cash. High earner takes leave 7 days/week during the high-income window."
+                    title: "Maximize Payout",
+                    description: "Goal: Most money now. Deplete days fast when salary is highest (incl. top-up) for max monthly amount."
                 },
                 STRAT_SGI_FORTRESS: {
-                    title: "The SGI Fortress",
-                    description: "Goal: Absolute protection. Strictly enforces 5 days/week coverage after child turns 1."
+                    title: "SGI Security",
+                    description: "Goal: Protect SGI. Ensure you never fall into the \"SGI trap\" after year 1, keeping future sick pay and VAB high."
                 },
                 STRAT_HOLIDAY_SANDWICH: {
-                    title: "The Holiday Sandwicher",
-                    description: "Goal: Extend vacations. Uses public holidays to create long breaks."
+                    title: "Long Leave Hack",
+                    description: "Goal: Holiday bonus. We puzzle public holidays and squeeze days to give you record-long continuous breaks."
                 },
                 STRAT_PENSION_PROTECT: {
-                    title: "The Pension Protector",
-                    description: "Goal: Wealth preservation. Takes 1/8th day daily to trigger pension waivers while working part-time."
+                    title: "Pension Safe",
+                    description: "Goal: Protect future. Work part-time without losing occupational pension. Take exactly 1/8 day to trigger employer payments."
                 },
                 STRAT_GRANDPARENT: {
-                    title: "The Grandparent Proxy",
-                    description: "Goal: Flexible care. Transfers 45 days per parent to a senior relative."
+                    title: "The Kinship Puzzle",
+                    description: "Goal: Relief. Transfer 45 days per parent to a grandparent or friend for more daily flexibility."
                 },
                 STRAT_EQUALITY: {
-                    title: "The Equality Balanced",
-                    description: "Goal: 50/50 split. Includes 60 Double Days early on for shared time."
+                    title: "Share Equally",
+                    description: "Goal: Fair 50/50. We split days equally and max out the 60 \"double days\" for as much shared time as possible."
                 },
                 STRAT_PART_TIME: {
-                    title: "The Part-Time Transition",
-                    description: "Goal: Carrier re-entry. Auto-fills exact benefit fraction to restore 100% net income at 75% work."
+                    title: "The Soft Start",
+                    description: "Goal: Keep salary. Reduce work hours but keep 100% of regular wage by filling income gap exactly with parental benefit."
                 }
             }
         },
@@ -108,7 +106,6 @@ export const translations = {
         },
         onboarding: {
             title: "Anpassa plan",
-            whoAreParents: "Vilka är föräldrarna?",
             childDob: "Barnets födelsedatum",
             parentAName: "Namn Förälder A",
             monthlyIncome: "Månadsinkomst (Före skatt)",
@@ -121,40 +118,39 @@ export const translations = {
             back: "Tillbaka",
             next: "Nästa",
             selectStrategy: "Välj en strategi",
-            strategySubtitle: "Baserat på din profil, här är optimerade mallar.",
             generatePlan: "Generera Plan",
             strategies: {
                 STRAT_TIME_STRETCHER: {
-                    title: "Tidsoptimeraren",
-                    description: "Mål: Max tid hemma. 0 dagar år 1. 5 dagar/vecka efter 1 år (L-dagar på helger)."
+                    title: "Maxa Ledigheten",
+                    description: "Mål: Var hemma längst. Spara alla dagar under år 1. Efteråt tar vi ut precis det som krävs för att skydda din inkomst."
                 },
                 STRAT_CASH_MAXER: {
-                    title: "Inkomstmaximeraren",
-                    description: "Mål: Max månadspeng. Höginkomsttagaren tar 7 dagar/vecka under top-up fönstret."
+                    title: "Maxa Utbetalningen",
+                    description: "Mål: Mest pengar nu. Vi tömmer dagarna snabbt när lönen är som högst (inkl. tillägg från jobbet) för högsta möjliga månadsbelopp."
                 },
                 STRAT_SGI_FORTRESS: {
-                    title: "SGI-Fortet",
-                    description: "Mål: Total trygghet. Säkerställer 5 dagar/vecka aktivitet efter 1-årsdagen."
+                    title: "SGI-Trygghet",
+                    description: "Mål: Skydda din SGI. Vi ser till att du aldrig hamnar i \"SGI-fällan\" efter 1-årsdagen så att din framtida sjukpenning och VAB förblir hög."
                 },
                 STRAT_HOLIDAY_SANDWICH: {
-                    title: "Semestermackan",
-                    description: "Mål: Förläng ledighet. Utnyttjar röda dagar och klämdagar smart."
+                    title: "Långledighets-hacket",
+                    description: "Mål: Semester-bonus. Vi pusslar ihop röda dagar och klämdagar för att ge dig rekordlånga sammanhängande ledigheter."
                 },
                 STRAT_PENSION_PROTECT: {
-                    title: "Pensionsräddaren",
-                    description: "Mål: Skydda framtiden. Tar 1/8-dags ersättning dagligen vid deltidsarbete för premiebefrielse."
+                    title: "Pensionssäkra",
+                    description: "Mål: Skydda framtiden. Jobba deltid utan att tappa tjänstepension. Vi tar ut exakt 1/8 dag för att trigga din arbetsgivares inbetalningar."
                 },
                 STRAT_GRANDPARENT: {
-                    title: "Mormor/Farfars-dagar",
-                    description: "Mål: Flexibel hjälp. Överlåter 45 dagar per förälder till pensionär."
+                    title: "Släktpusslet",
+                    description: "Mål: Avlastning. Överlåt 45 dagar per förälder till mormor, farfar eller en nära vän för mer flexibilitet i vardagen."
                 },
                 STRAT_EQUALITY: {
-                    title: "Jämställdhetsbalansen",
-                    description: "Mål: 50/50 delning. Inkluderar 60 dubbeldagar tidigt för gemensam tid."
+                    title: "Dela Lika",
+                    description: "Mål: Rättvis 50/50. Vi delar dagarna helt lika och maxar de 60 \"dubbeldagarna\" för att ni ska få så mycket tid tillsammans som möjligt."
                 },
                 STRAT_PART_TIME: {
-                    title: "Deltidsövergången",
-                    description: "Mål: Mjuk återgång. Fyller upp inkomstbortfall exakt med föräldrapenning (netto-match)."
+                    title: "Mjukstarten",
+                    description: "Mål: Behåll lönen. Gå ner i arbetstid men behåll 100% av din vanliga lön genom att fylla upp inkomsttappet exakt med föräldrapenning."
                 }
             }
         },
