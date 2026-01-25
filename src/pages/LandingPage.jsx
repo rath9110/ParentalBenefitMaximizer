@@ -158,9 +158,13 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                                 placeholder={t('landing.placeholderDouble')}
                                 value={inputs.doubleDays}
                                 onChange={(e) => {
-                                    let val = parseInt(e.target.value) || '';
-                                    if (val > 60) val = 60;
-                                    handleChange('doubleDays', val);
+                                    const rawVal = e.target.value;
+                                    const sanitized = rawVal.replace(/[^0-9]/g, '');
+                                    let finalVal = sanitized;
+                                    if (sanitized !== '') {
+                                        if (parseInt(sanitized, 10) > 60) finalVal = '60';
+                                    }
+                                    setInputs(prev => ({ ...prev, doubleDays: finalVal }));
                                 }}
                                 style={{
                                     width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-sm)',

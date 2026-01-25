@@ -3,7 +3,7 @@ import Card from '../components/Card';
 import CalendarView from '../components/CalendarView';
 import Button from '../components/Button';
 import SEO from '../components/SEO';
-import { HOLIDAYS_2026 } from '../config/constants';
+import { HOLIDAYS_2026, STATUTORY_CONSTANTS_2026 } from '../config/constants';
 import { generateStrategyPattern } from '../logic/strategies';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
@@ -81,116 +81,132 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
     const partnerMaxS = Math.max(0, totalS - reservedS);
     const partnerSLeft = Math.round((partnerMaxS - counts.usedS_Partner) * 10) / 10;
 
-    // Household Net Calculation (Annualized Estimate)
-    const calculateHouseholdNet = () => {
-        // 1. Aggregate Year 1 Gross Income for each Parent
-        let grossWorkA = 0;
-        let grossBenefitA = 0;
-        let grossWorkB = 0;
-        let grossBenefitB = 0;
-
-        // Helper to get daily salary rate
-        const getDailySalary = (income) => (income * 12) / 365;
-
+    // --- Monthly Income Calculation ---
+    const monthlyIncomeData = useMemo(() => {
+        const months = {}; // "2026-01" -> { netA, netB, grossWorkA... }
         const today = new Date();
-        // Loop 1 year from now
-        for (let i = 0; i < 365; i++) {
-            const d = new Date(today);
-            d.setDate(today.getDate() + i);
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const dStr = `${y}-${m}-${day}`;
+        const startYear = today.getFullYear();
+        const startMonth = today.getMonth(); // 0-11
 
-            const allocationMap = allocatedDays[dStr];
-            const isHoliday = HOLIDAYS_2026.includes(dStr);
-            const wDay = d.getDay();
-            const isWeekend = wDay === 0 || wDay === 6;
-            const isFreeTime = isWeekend || isHoliday;
+        // Look ahead 24 months
+        for (let mOffset = 0; mOffset < 24; mOffset++) {
+            const currentMonthDate = new Date(startYear, startMonth + mOffset, 1);
+            const y = currentMonthDate.getFullYear();
+            const mon = currentMonthDate.getMonth();
+            const daysInMonth = new Date(y, mon + 1, 0).getDate();
+            const monthKey = `${y}-${String(mon + 1).padStart(2, '0')}`;
 
-            const allocA = allocationMap?.parentA || null;
-            const allocB = allocationMap?.parentB || null;
+            let monGrossWorkA = 0;
+            let monGrossBenefitA = 0;
+            let monGrossWorkB = 0;
+            let monGrossBenefitB = 0;
 
-            // Parent A
-            // Base Salary (Always earned unless deducted for work-day absence)
-            // Deduction only happens if (Allocated AND WorkDay)
-            let deductA = false;
-            let benefitA = 0;
+            const dailySalA = (userProfile.parentA.income * 12) / 365;
+            const dailySalB = (userProfile.parentB.income * 12) / 365;
+            // Cap at 10 PBB for 2026 (approx 49,333/mo)
+            const sgiCap = STATUTORY_CONSTANTS_2026 ? (STATUTORY_CONSTANTS_2026.SGI_CAP_FULL / 12) : 49333;
 
-            if (allocA) {
-                const extent = allocA.extent || 1;
-                // Calculate Benefit
-                if (allocA.type === 'S') {
-                    const cappedIncome = Math.min(userProfile.parentA.income, 45000);
-                    benefitA += ((cappedIncome * 12 * 0.8) / 365) * extent;
-                    if (userProfile.parentA.hasTopUp) {
-                        // Top up usually only for Work Days? Or if you take S-days?
-                        // Collective agreement usually pays top-up on S-days regardless?
-                        // Let's assume yes.
-                        benefitA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${y}-${String(mon + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dateObj = new Date(y, mon, d);
+                const dayOfWeek = dateObj.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const isHoliday = HOLIDAYS_2026.includes(dateStr);
+                const isFreeTime = isWeekend || isHoliday;
+
+                const allocationMap = allocatedDays[dateStr];
+                const allocA = allocationMap?.parentA || null;
+                const allocB = allocationMap?.parentB || null;
+
+                // --- Parent A ---
+                let deductA = false;
+                let dayBenefitA = 0;
+                if (allocA) {
+                    const extent = allocA.extent || 1;
+                    if (allocA.type === 'S') {
+                        const cappedIncome = Math.min(userProfile.parentA.income, sgiCap);
+                        dayBenefitA += ((cappedIncome * 12 * 0.8) / 365) * extent; // ~80%
+                        if (userProfile.parentA.hasTopUp) {
+                            // Top-up (approx 10% of full salary)
+                            dayBenefitA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
+                        }
+                    } else {
+                        dayBenefitA += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
                     }
+                    if (!isFreeTime) deductA = true;
+                }
+
+                if (deductA) {
+                    const extent = allocA?.extent || 1;
+                    monGrossWorkA += dailySalA * (1 - extent);
                 } else {
-                    benefitA += 180 * extent;
+                    monGrossWorkA += dailySalA;
                 }
+                monGrossBenefitA += dayBenefitA;
 
-                // Work Day logic
-                if (!isFreeTime) {
-                    deductA = true;
-                    // If fractional (extent < 1), we deduct 'extent' salary.
-                    // But we add (1-extent) salary.
-                    // Simplified: Add Salary * (1-extent).
-                }
-            }
-
-            // Add Salary
-            const dailySalA = getDailySalary(userProfile.parentA.income);
-            if (deductA) {
-                const extent = allocA?.extent || 1;
-                grossWorkA += dailySalA * (1 - extent);
-            } else {
-                grossWorkA += dailySalA;
-            }
-            grossBenefitA += benefitA;
-
-
-            // Parent B (Same Logic)
-            let deductB = false;
-            let benefitB = 0;
-
-            if (allocB) {
-                const extent = allocB.extent || 1;
-                if (allocB.type === 'S') {
-                    const cappedIncome = Math.min(userProfile.parentB.income, 45000);
-                    benefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
-                    if (userProfile.parentB.hasTopUp) {
-                        benefitB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
+                // --- Parent B ---
+                let deductB = false;
+                let dayBenefitB = 0;
+                if (allocB) {
+                    const extent = allocB.extent || 1;
+                    if (allocB.type === 'S') {
+                        const cappedIncome = Math.min(userProfile.parentB.income, sgiCap);
+                        dayBenefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
+                        if (userProfile.parentB.hasTopUp) {
+                            dayBenefitB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
+                        }
+                    } else {
+                        dayBenefitB += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
                     }
-                } else {
-                    benefitB += 180 * extent;
+                    if (!isFreeTime) deductB = true;
                 }
 
-                if (!isFreeTime) deductB = true;
+                if (deductB) {
+                    const extent = allocB?.extent || 1;
+                    monGrossWorkB += dailySalB * (1 - extent);
+                } else {
+                    monGrossWorkB += dailySalB;
+                }
+                monGrossBenefitB += dayBenefitB;
             }
 
-            const dailySalB = getDailySalary(userProfile.parentB.income);
-            if (deductB) {
-                const extent = allocB?.extent || 1;
-                grossWorkB += dailySalB * (1 - extent);
-            } else {
-                grossWorkB += dailySalB;
-            }
-            grossBenefitB += benefitB;
+            // Calc monthly net (projected to annual bracket)
+            const taxRate = userProfile.taxRate || 32.0;
+
+            // Net A
+            const annualGrossWorkA = monGrossWorkA * 12;
+            const annualGrossBenA = monGrossBenefitA * 12;
+            const annualNetA = calculateAnnualMixedNet(annualGrossWorkA, annualGrossBenA, taxRate);
+            const monthlyNetA = Math.round(annualNetA / 12);
+
+            // Net B
+            const annualGrossWorkB = monGrossWorkB * 12;
+            const annualGrossBenB = monGrossBenefitB * 12;
+            const annualNetB = calculateAnnualMixedNet(annualGrossWorkB, annualGrossBenB, taxRate);
+            const monthlyNetB = Math.round(annualNetB / 12);
+
+            months[monthKey] = {
+                monthStr: currentMonthDate.toLocaleString('default', { month: 'short', year: 'numeric' }),
+                netTotal: monthlyNetA + monthlyNetB,
+                isMixed: (monGrossBenefitA + monGrossBenefitB) > 0
+            };
         }
+        return months;
 
-        // 2. Calculate Net
-        const taxRate = userProfile.taxRate || 32.0;
-        const netA = calculateAnnualMixedNet(grossWorkA, grossBenefitA, taxRate);
-        const netB = calculateAnnualMixedNet(grossWorkB, grossBenefitB, taxRate);
+    }, [allocatedDays, userProfile]);
 
-        return Math.round((netA + netB) / 12);
-    };
+    const scorecardNet = useMemo(() => {
+        // Average of first 12 months
+        // Or average of months where "isMixed" is true?
+        // User asked for monthly breakdown, but kept the average scorecard.
+        // Let's keep the scorecard as a simple average of the first 12 months for consistency.
+        const values = Object.values(monthlyIncomeData).slice(0, 12).map(m => m.netTotal);
+        if (values.length === 0) return 0;
+        const sum = values.reduce((a, b) => a + b, 0);
+        return Math.round(sum / values.length);
+    }, [monthlyIncomeData]);
 
-    const scorecardNet = useMemo(() => calculateHouseholdNet(), [allocatedDays, userProfile]);
+
 
     const handleToggleDay = (dateStr, parentId) => {
         setAllocatedDays(prev => {
@@ -308,21 +324,52 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 </header>
 
                 <div style={{ flex: 1, overflowY: 'auto', position: 'relative', background: 'var(--color-bg)' }}>
-                    <div style={{ padding: '1rem', maxWidth: '1400px', margin: '0 auto' }}>
+                    <div style={{ padding: '1rem', maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
 
-                        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <p className="text-muted" style={{ fontSize: '0.9rem' }}>
-                                {t('dashboard.painting')} <strong>{activeType}{t('dashboard.daysFor')}</strong> <strong>{activeParent === 'parentA' ? userProfile.parentA.name : userProfile.parentB.name}</strong>
-                            </p>
+                        {/* Main Calendar Area */}
+                        <div style={{ flex: 3, minWidth: 0 }}>
+                            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <p className="text-muted" style={{ fontSize: '0.9rem' }}>
+                                    {t('dashboard.painting')} <strong>{activeType}{t('dashboard.daysFor')}</strong> <strong>{activeParent === 'parentA' ? userProfile.parentA.name : userProfile.parentB.name}</strong>
+                                </p>
+                            </div>
+
+                            <Card>
+                                <CalendarView
+                                    allocatedDays={allocatedDays}
+                                    activeParent={activeParent}
+                                    onToggleDay={handleToggleDay}
+                                />
+                            </Card>
                         </div>
 
-                        <Card>
-                            <CalendarView
-                                allocatedDays={allocatedDays}
-                                activeParent={activeParent}
-                                onToggleDay={handleToggleDay}
-                            />
-                        </Card>
+                        {/* Side Panel: Monthly Economy */}
+                        <div style={{ flex: 1, background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', position: 'sticky', top: '1rem' }}>
+                            <h3 style={{ marginTop: 0, fontSize: '1.1rem', color: 'var(--color-primary)', borderBottom: '1px solid #eee', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                                Ekonomi per månad
+                            </h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '70vh', overflowY: 'auto' }}>
+                                {Object.values(monthlyIncomeData).slice(0, 18).map((month, idx) => (
+                                    <div key={idx} style={{
+                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                        padding: '0.75rem', backgroundColor: month.isMixed ? '#f8fafc' : 'white',
+                                        borderRadius: '8px', border: month.isMixed ? '1px solid #e2e8f0' : '1px solid transparent'
+                                    }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#334155' }}>{month.monthStr}</div>
+                                            {month.isMixed && <span style={{ fontSize: '0.65rem', color: '#64748b', background: '#e0f2fe', padding: '2px 6px', borderRadius: '4px' }}>Ledighet</span>}
+                                        </div>
+                                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                            {month.netTotal.toLocaleString()} kr
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.4', fontStyle: 'italic' }}>
+                                * Nettolön inkl. bidrag efter skatt. Baserat på angiven månadslön och F-dagarsersättning.
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 

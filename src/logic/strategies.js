@@ -98,7 +98,14 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
     let usedS_A = 0;
     let usedS_B = 0;
     const RESERVED_PER_PARENT = STATUTORY_CONSTANTS_2026.RESERVED_DAYS_PER_PARENT || 90;
-    const maxS_PerParent = Math.max(RESERVED_PER_PARENT, budgetS - RESERVED_PER_PARENT);
+
+    // Default Max: One parent takes everything except partner's reserved days.
+    let maxS_PerParent = Math.max(RESERVED_PER_PARENT, budgetS - RESERVED_PER_PARENT);
+
+    // Override for EQUALITY: Strict 50/50 split
+    if (strategyId === STRATEGIES.EQUALITY) {
+        maxS_PerParent = Math.floor(budgetS / 2);
+    }
 
     // Loop 2 Years (730 Days)
     for (let i = 0; i < 730; i++) {
@@ -274,14 +281,13 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
                 break;
 
             case STRATEGIES.EQUALITY:
-                // "Swap primary caregiver every 3-6 months."
-                // "60 Double Days" handled above.
+                // "50/50 Split. One swap."
+                // Parent A takes first half, Parent B takes second half.
+                // Spillover logic handlers the switch when maxS_PerParent is reached.
                 if (!isWeekend && !isHoliday) {
                     shouldBook = true;
                     type = 'S';
-                    // 3 month block ~ 90 days.
-                    const block = Math.floor(i / 90);
-                    pId = (block % 2 === 0) ? 'parentA' : 'parentB';
+                    pId = 'parentA';
                 }
                 break;
 
