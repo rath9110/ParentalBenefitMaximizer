@@ -101,6 +101,32 @@ export const translations = {
         calendar: {
             weekdays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
             locale: 'en-US'
+        },
+        articles: {
+            ultimateGuide: {
+                title: "The Ultimate Guide to Parental Benefits 2026",
+                description: "Everything about income caps (PBB), compensation levels, and rules for 2026."
+            },
+            highIncome: {
+                title: "High Income Earners & Tax Strategy",
+                description: "Over the limit? How to optimize salary exchange and avoid the state tax trap."
+            },
+            holidays: {
+                title: "Holidays & Leave: Maximizing 2026",
+                description: "The \"Sandwich Method\" and how to combine vacation with parental leave."
+            },
+            sgiProtection: {
+                title: "SGI Protection: After Year 1",
+                description: "The 5-day rule explained. How to protect your income when the child turns one."
+            },
+            transferDays: {
+                title: "Transfer Days: Involve the Relatives",
+                description: "New rules 2026: Giving days to grandparents or friends."
+            },
+            mjukstarten: {
+                title: "The Soft Start: For Leaders",
+                description: "Combine career with parenting. Fraction strategies for 100% income."
+            }
         }
     },
     sv: {
@@ -205,6 +231,32 @@ export const translations = {
         calendar: {
             weekdays: ['Må', 'Ti', 'On', 'To', 'Fr', 'Lö', 'Sö'],
             locale: 'sv-SE'
+        },
+        articles: {
+            ultimateGuide: {
+                title: "Den ultimata guiden till föräldrapenning 2026",
+                description: "Allt om prisbasbelopp, ersättningsnivåer och SGI-tak för det kommande året."
+            },
+            highIncome: {
+                title: "Höginkomsttagare & Skatteplanering",
+                description: "Över brytpunkten? Så optimerar du löneväxling och undviker statlig skatt."
+            },
+            holidays: {
+                title: "Semester & Ledighet: Maximera 2026",
+                description: "\"Sandwich-metoden\" och hur du kombinerar semester med föräldradagar."
+            },
+            sgiProtection: {
+                title: "SGI-Skydd: Efter 1-årsdagen",
+                description: "5-dagarsregeln förklarad. Så skyddar du din inkomst när barnet fyller ett."
+            },
+            transferDays: {
+                title: "Överlåtelse: Involvera släkten",
+                description: "Nya regler 2026: Ge dagar till morföräldrar eller vänner."
+            },
+            mjukstarten: {
+                title: "Mjukstarten: För ledare",
+                description: "Kombinera karriär med föräldraskap. Fraktionsstrategier för 100% inkomst."
+            }
         }
     }
 };

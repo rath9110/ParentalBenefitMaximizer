@@ -220,10 +220,10 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('FAQ_2026'); }}
                             style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                            <span>📄</span> Föräldrapenning 2026: Allt om Prisbasbelopp
+                            <span>📄</span> {t('articles.ultimateGuide.title')}
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Vad är prisbasbeloppet för 2026? Hur påverkar det mitt SGI-tak?
+                            {t('articles.ultimateGuide.description')}
                         </p>
                     </li>
                     <li style={{ marginBottom: '1.5rem' }}>
@@ -232,10 +232,10 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('HIGH_INCOME_2026'); }}
                             style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                            <span>💰</span> Höginkomsttagarens guide: Optimera din föräldralön och skatt 2026
+                            <span>💰</span> {t('articles.highIncome.title')}
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Tjänar du över brytpunkten? Lär dig hur du skyddar din inkomst och planerar skattesmart med "net match".
+                            {t('articles.highIncome.description')}
                         </p>
                     </li>
                     <li style={{ marginBottom: '1.5rem' }}>
@@ -244,10 +244,10 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('SGI_PROTECTION_2026'); }}
                             style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                            <span>👶</span> SGI-skydd efter 1 år: Så undviker du att din ersättning nollas
+                            <span>👶</span> {t('articles.sgiProtection.title')}
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Den kritiska 1-årsdagen och 5-dagarsregeln. Vi förklarar hur du använder "SGI-gardet" för att behålla din ersättning.
+                            {t('articles.sgiProtection.description')}
                         </p>
                     </li>
                     <li style={{ marginBottom: '1.5rem' }}>
@@ -256,10 +256,10 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('HOLIDAY_2026'); }}
                             style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                            <span>☀️</span> Semester & Föräldrapenning: Maximera din ledighet sommaren 2026
+                            <span>☀️</span> {t('articles.holidays.title')}
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Lär dig "sandwich-metoden" och hur du bäst kombinerar semester med föräldradagar för en längre sommar.
+                            {t('articles.holidays.description')}
                         </p>
                     </li>
                     <li style={{ marginBottom: '1.5rem' }}>
@@ -268,10 +268,10 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('TRANSFER_DAYS_2026'); }}
                             style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                            <span>👵</span> Överlåtelse av dagar: Så involverar du mor- och farföräldrar
+                            <span>👵</span> {t('articles.transferDays.title')}
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Möjligheten att överlåta dagar till anhöriga. Regler för SGI, pensionärer och hur ni maximerar familjepusslet.
+                            {t('articles.transferDays.description')}
                         </p>
                     </li>
                     <li style={{ marginBottom: '1.5rem' }}>
@@ -280,10 +280,10 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('PART_TIME_2026'); }}
                             style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                            <span>🔄</span> Mjukstarten: Så planerar du en hållbar föräldraledighet 2026
+                            <span>🔄</span> {t('articles.mjukstarten.title')}
                         </a>
                         <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem', paddingLeft: '1.8rem' }}>
-                            Kombinera karriär och föräldraskap. Vi går igenom reglerna för delledighet, SGI-skydd och hur du behåller 100% inkomst.
+                            {t('articles.mjukstarten.description')}
                         </p>
                     </li>
                 </ul>
