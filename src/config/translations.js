@@ -39,6 +39,8 @@ export const translations = {
         onboarding: {
             title: "Customize plan",
             childDob: "Child's Date of Birth",
+            municipalityLabel: "Municipality (Tax)",
+            searchMunicipality: "Search municipality...",
             parentAName: "Parent A Name",
             monthlyIncome: "Monthly Income (Before Tax)",
             parentBName: "Parent B Name",
@@ -169,6 +171,8 @@ export const translations = {
         onboarding: {
             title: "Anpassa plan",
             childDob: "Barnets födelsedatum",
+            municipalityLabel: "Kommun (Skatt)",
+            searchMunicipality: "Sök kommun...",
             parentAName: "Namn Förälder A",
             monthlyIncome: "Månadsinkomst (Före skatt)",
             parentBName: "Namn Förälder B",

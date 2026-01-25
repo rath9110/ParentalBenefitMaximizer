@@ -44,7 +44,7 @@ const HighIncomeGuide2026 = ({ onBack }) => {
                 <SEO
                     title="High Earners & Parental Leave 2026: SGI Caps & Tax Planning"
                     description="Earning above the threshold? Learn how to maximize your parental benefit in 2026 with our strategies for high income earners. Guide to SGI caps, 10-base amounts, and net salary optimization."
-                    canonical="https://foraldraledighet.se/articles/2026/high-income"
+                    canonical="https://foraldraledighet.se/foraldrapenning-hoginkomsttagare"
                     schema={faqSchema}
                 />
 
@@ -173,7 +173,7 @@ const HighIncomeGuide2026 = ({ onBack }) => {
             <SEO
                 title="Höginkomsttagare & Föräldraledighet 2026: SGI-tak & Skatteplanering"
                 description="Tjänar du över brytpunkten? Lär dig maximera din föräldrapenning 2026 med våra strategier för höginkomsttagare. Guide till SGI-tak, 10-basbelopp och nettolöneoptimering."
-                canonical="https://foraldraledighet.se/articles/2026/high-income"
+                canonical="https://foraldraledighet.se/foraldrapenning-hoginkomsttagare"
                 schema={faqSchema}
             />
 

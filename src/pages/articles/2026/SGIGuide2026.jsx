@@ -52,7 +52,7 @@ const SGIGuide2026 = ({ onBack }) => {
                 <SEO
                     title="Protect SGI 2026: The 5-day Rule & 1st Birthday"
                     description="Missing the 1-year mark can cost thousands. Everything about SGI protection, the 5-day rule, and how to avoid zeroing your income during parental leave 2026."
-                    canonical="https://foraldraledighet.se/articles/2026/sgi-protection"
+                    canonical="https://foraldraledighet.se/sgi-skydd-2026"
                     schema={faqSchema}
                 />
 
@@ -160,7 +160,7 @@ const SGIGuide2026 = ({ onBack }) => {
             <SEO
                 title="Skydda SGI 2026: 5-dagarsregeln & 1-årsdagen"
                 description="Missar du 1-årsdagen kan det kosta tusenlappar. Allt om SGI-skydd, 5-dagarsregeln och hur du undviker att nolla din inkomst under föräldraledigheten 2026."
-                canonical="https://foraldraledighet.se/articles/2026/sgi-protection"
+                canonical="https://foraldraledighet.se/sgi-skydd-2026"
                 schema={faqSchema}
             />
 

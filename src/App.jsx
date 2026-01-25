@@ -40,17 +40,17 @@ function AppContent() {
     // Adapter for legacy onNavigate prop from LandingPage
     const handleNavigation = (target) => {
         if (target === 'FAQ_2026') {
-            navigate('/articles/2026/guide');
+            navigate('/planera-foraldraledighet');
         } else if (target === 'HIGH_INCOME_2026') {
-            navigate('/articles/2026/high-income');
+            navigate('/foraldrapenning-hoginkomsttagare');
         } else if (target === 'SGI_PROTECTION_2026') {
-            navigate('/articles/2026/sgi-protection');
+            navigate('/sgi-skydd-2026');
         } else if (target === 'HOLIDAY_2026') {
-            navigate('/articles/2026/holidays');
+            navigate('/semester-och-foraldrapenning');
         } else if (target === 'TRANSFER_DAYS_2026') {
-            navigate('/articles/2026/transfer-days');
+            navigate('/overlatelse-av-foraldradagar');
         } else if (target === 'PART_TIME_2026') {
-            navigate('/articles/2026/mjukstarten');
+            navigate('/mjukstarten-guide');
         } else {
             navigate('/');
         }
@@ -78,22 +78,22 @@ function AppContent() {
                     )
                 } />
 
-                <Route path="/articles/2026/guide" element={
+                <Route path="/planera-foraldraledighet" element={
                     <UltimateGuidePrisbasbelopp onBack={() => navigate('/')} />
                 } />
-                <Route path="/articles/2026/high-income" element={
+                <Route path="/foraldrapenning-hoginkomsttagare" element={
                     <HighIncomeGuide2026 onBack={() => navigate('/')} />
                 } />
-                <Route path="/articles/2026/sgi-protection" element={
+                <Route path="/sgi-skydd-2026" element={
                     <SGIGuide2026 onBack={() => navigate('/')} />
                 } />
-                <Route path="/articles/2026/holidays" element={
+                <Route path="/semester-och-foraldrapenning" element={
                     <HolidayGuide2026 onBack={() => navigate('/')} />
                 } />
-                <Route path="/articles/2026/transfer-days" element={
+                <Route path="/overlatelse-av-foraldradagar" element={
                     <TransferDaysGuide2026 onBack={() => navigate('/')} />
                 } />
-                <Route path="/articles/2026/mjukstarten" element={
+                <Route path="/mjukstarten-guide" element={
                     <MjukstartenGuide2026 onBack={() => navigate('/')} />
                 } />
             </Routes>

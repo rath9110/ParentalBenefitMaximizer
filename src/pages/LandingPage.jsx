@@ -38,12 +38,29 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
         });
     };
 
+    // SoftwareApplication Schema
+    const softwareApplicationSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Föräldraledighet.se",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "SEK"
+        },
+        "description": "Optimera din föräldraledighet med vår smarta kalkylator. Få ut mer tid och pengar.",
+        "featureList": "Kalkylator för föräldrapenning, SGI-skydd, semesterplanering"
+    };
+
     return (
         <div style={{ padding: '2rem 1rem', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <SEO
-                title="Föräldraledighet.se - Optimera din föräldraledighet 2026"
-                description="Beräkna och optimera din föräldraledighet. Få ut mer tid och pengar med smarta strategier för 2026."
+                title={t('landing.seo_title')}
+                description={t('landing.seo_desc')}
                 canonical="https://foraldraledighet.se/"
+                schema={softwareApplicationSchema}
             />
 
             {/* Utility Bar */}

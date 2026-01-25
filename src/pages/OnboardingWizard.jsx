@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import SEO from '../components/SEO';
@@ -19,6 +19,33 @@ const OnboardingWizard = ({ onComplete }) => {
         parentB: { name: 'Partner', income: 35000, agreement: 'None', hasTopUp: false },
         strategy: STRATEGIES.EQUALITY // Default
     });
+    const [muniSearch, setMuniSearch] = useState('');
+    const [isMuniOpen, setIsMuniOpen] = useState(false);
+    const muniRef = useRef(null);
+
+    // Initial search sync
+    useEffect(() => {
+        if (formData.municipality) {
+            setMuniSearch(formData.municipality);
+        }
+    }, [formData.municipality]);
+
+    // Click outside handler
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (muniRef.current && !muniRef.current.contains(event.target)) {
+                setIsMuniOpen(false);
+                // Reset search to selected if we close without selecting
+                setMuniSearch(formData.municipality);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [formData.municipality]);
+
+    const filteredMunicipalities = municipalities.filter(m =>
+        m.name.toLowerCase().includes(muniSearch.toLowerCase())
+    );
 
     useEffect(() => {
         const loadMunis = async () => {
@@ -91,18 +118,56 @@ const OnboardingWizard = ({ onComplete }) => {
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Municipality (Tax)</label>
-                                <select
-                                    value={formData.municipality}
-                                    onChange={handleMuniChange}
-                                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
-                                >
-                                    {municipalities.length === 0 && <option>Loading...</option>}
-                                    {municipalities.map(m => (
-                                        <option key={m.name} value={m.name}>{m.name} ({m.taxRate}%)</option>
-                                    ))}
-                                </select>
+                            <div ref={muniRef} style={{ position: 'relative' }}>
+                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>{t('onboarding.municipalityLabel') || "Municipality (Tax)"}</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type="text"
+                                        value={muniSearch}
+                                        onChange={(e) => {
+                                            setMuniSearch(e.target.value);
+                                            setIsMuniOpen(true);
+                                        }}
+                                        onFocus={() => setIsMuniOpen(true)}
+                                        placeholder={t('onboarding.searchMunicipality') || "Search municipality..."}
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
+                                    />
+                                    {isMuniOpen && (
+                                        <div style={{
+                                            position: 'absolute', top: '100%', left: 0, right: 0,
+                                            backgroundColor: 'white', border: '1px solid #ddd',
+                                            borderRadius: '0 0 8px 8px', zIndex: 100,
+                                            maxHeight: '200px', overflowY: 'auto',
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                        }}>
+                                            {filteredMunicipalities.length === 0 ? (
+                                                <div style={{ padding: '0.5rem', color: '#888', fontSize: '0.9rem' }}>No matches</div>
+                                            ) : (
+                                                filteredMunicipalities.map(m => (
+                                                    <div
+                                                        key={m.name}
+                                                        onClick={() => {
+                                                            setFormData(prev => ({ ...prev, municipality: m.name, taxRate: m.taxRate }));
+                                                            setMuniSearch(m.name);
+                                                            setIsMuniOpen(false);
+                                                        }}
+                                                        style={{
+                                                            padding: '0.5rem 1rem', cursor: 'pointer',
+                                                            borderBottom: '1px solid #f9f9f9',
+                                                            display: 'flex', justifyContent: 'space-between',
+                                                            backgroundColor: formData.municipality === m.name ? '#f0f7ff' : 'transparent'
+                                                        }}
+                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                                                        onMouseLeave={(e) => e.target.style.backgroundColor = formData.municipality === m.name ? '#f0f7ff' : 'transparent'}
+                                                    >
+                                                        <span>{m.name}</span>
+                                                        <span style={{ fontSize: '0.8rem', color: '#666' }}>{m.taxRate}%</span>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

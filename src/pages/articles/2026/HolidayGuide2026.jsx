@@ -52,7 +52,7 @@ const HolidayGuide2026 = ({ onBack }) => {
                 <SEO
                     title="Vacation & Parental Leave 2026: Maximize Summer"
                     description="Plan your summer 2026 smartly! The 'Sandwich Method', vacation days vs parental days, and rules for holiday pay-qualifying time. Maximize your leave with our guide."
-                    canonical="https://foraldraledighet.se/articles/2026/holidays"
+                    canonical="https://foraldraledighet.se/semester-och-foraldrapenning"
                     schema={faqSchema}
                 />
 
@@ -162,7 +162,7 @@ const HolidayGuide2026 = ({ onBack }) => {
             <SEO
                 title="Semester & Föräldrapenning 2026: Så maxar du sommaren"
                 description="Planera sommaren 2026 smart! Sandwichen-metoden, semesterdagar vs föräldradagar och regler för semesterlönegrundande tid. Maximera din ledighet med vår guide."
-                canonical="https://foraldraledighet.se/articles/2026/holidays"
+                canonical="https://foraldraledighet.se/semester-och-foraldrapenning"
                 schema={faqSchema}
             />
 

@@ -44,7 +44,7 @@ const MjukstartenGuide2026 = ({ onBack }) => {
                 <SEO
                     title="Soft Start 2026: Plan Sustainable Parental Leave"
                     description="Learn how to combine career and parenthood with the Soft Start. Optimize income, protect SGI, and keep pension contributions."
-                    canonical="https://foraldraledighet.se/articles/2026/mjukstarten"
+                    canonical="https://foraldraledighet.se/mjukstarten-guide"
                     schema={faqSchema}
                 />
 
@@ -170,7 +170,7 @@ const MjukstartenGuide2026 = ({ onBack }) => {
             <SEO
                 title="Mjukstarten 2026: Planera en hållbar föräldraledighet"
                 description="Lär dig hur du kombinerar karriär och föräldraskap med Mjukstarten. Optimera inkomst, skydda SGI och behåll pensionsinbetalningar."
-                canonical="https://foraldraledighet.se/articles/2026/mjukstarten"
+                canonical="https://foraldraledighet.se/mjukstarten-guide"
                 schema={faqSchema}
             />
 

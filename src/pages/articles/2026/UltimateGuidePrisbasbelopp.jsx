@@ -52,7 +52,7 @@ const UltimateGuidePrisbasbelopp = ({ onBack }) => {
                 <SEO
                     title="Parental Benefit 2026: Price Base Amount & Levels (Guide)"
                     description="Current amounts for 2026! The price base amount is 59,200 SEK. See how it affects your max benefit, SGI cap, and minimum level days."
-                    canonical="https://foraldraledighet.se/articles/2026/guide"
+                    canonical="https://foraldraledighet.se/planera-foraldraledighet"
                     schema={faqSchema}
                 />
                 <div style={{ marginBottom: '2rem' }}>
@@ -147,7 +147,7 @@ const UltimateGuidePrisbasbelopp = ({ onBack }) => {
             <SEO
                 title="Föräldrapenning 2026: Prisbasbelopp & Ersättningsnivåer (Guide)"
                 description="Aktuella belopp för 2026! Prisbasbeloppet är 59 200 kr. Se hur det påverkar din maxersättning, SGI-taket och lägstanivådagarna."
-                canonical="https://foraldraledighet.se/articles/2026/guide"
+                canonical="https://foraldraledighet.se/planera-foraldraledighet"
                 schema={faqSchema}
             />
 

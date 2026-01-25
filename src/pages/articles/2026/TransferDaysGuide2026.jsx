@@ -53,7 +53,7 @@ const TransferDaysGuide2026 = ({ onBack }) => {
                     title="Transfer Parental Days 2026: Guide for Grandparents"
                     description="Learn the rules for transferring parental benefit days to relatives. All about compensation levels for pensioners, employer certificates, and application."
                     schema={faqSchema}
-                    canonical="https://foraldraledighet.se/articles/2026/transfer-days"
+                    canonical="https://foraldraledighet.se/overlatelse-av-foraldradagar"
                 />
                 <div style={{ marginBottom: '2rem' }}>
                     <Button onClick={onBack} variant="secondary">← Back</Button>
@@ -150,10 +150,10 @@ const TransferDaysGuide2026 = ({ onBack }) => {
     return (
         <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-main)' }}>
             <SEO
-                title="Överlåtelse av föräldradagar 2026: Guide för mor- och farföräldrar"
-                description="Lär dig reglerna för att överlåta föräldrapenningdagar till anhöriga. Allt om ersättningsnivåer för pensionärer, arbetsgivarintyg och ansökan."
+                title="Överlåtelse av dagar 2026: Din guide till mormors-regeln"
+                description="Lär dig reglerna för att överlåta föräldradagar till anhöriga. Allt om ersättningsnivåer för pensionärer, arbetsgivarintyg och ansökan."
                 schema={faqSchema}
-                canonical="https://foraldraledighet.se/articles/2026/transfer-days"
+                canonical="https://foraldraledighet.se/overlatelse-av-foraldradagar"
             />
             <div style={{ marginBottom: '2rem' }}>
                 <Button onClick={onBack} variant="secondary">← Tillbaka</Button>
