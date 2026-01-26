@@ -1,6 +1,8 @@
 export const translations = {
     en: {
         landing: {
+            seo_title: "Föräldraledighet.se - Maximize your Parental Leave 2026",
+            seo_desc: "Maximize your parental benefit in 2026. Strategic tools to optimize SGI, parental pay, and day transfers based on the 59,200 SEK price base amount. Plan smarter here.",
             title: "Optimize your Parental Leave",
             subtitle: "Calculate your plan for 2026. Enter your remaining days from Försäkringskassan below.",
             externalHelper: "Find your days on My Pages (Försäkringskassan)",
@@ -133,6 +135,8 @@ export const translations = {
     },
     sv: {
         landing: {
+            seo_title: "Föräldraledighet.se - Optimera din föräldraledighet 2026",
+            seo_desc: "Maxa din föräldrapenning 2026. Strategiska verktyg för att optimera SGI, föräldralön och överlåtelse av dagar baserat på prisbasbeloppet 59 200 kr. Planera smartare här.",
             title: "Optimera din föräldraledighet",
             subtitle: "Beräkna din plan för 2026. Ange dina kvarstående dagar från Försäkringskassan nedan.",
             externalHelper: "Hitta dina dagar på Mina Sidor (Försäkringskassan)",

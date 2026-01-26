@@ -35,39 +35,53 @@ const FALLBACK_MUNICIPALITIES = [
  */
 export const fetchMunicipalities = async () => {
     try {
-        // Fetch JSON from Skatteverket
-        // We need 'kommun' and 'summa, inkl. kyrkoavgift' (or exkl? usually exkl for general comparison, but inkl is safer for worst case?)
-        // Let's use "Summa, exkl. kyrkoavgift" as standard municipal tax.
-        // The API returns columns. We want Year 2025 (or latest).
+        const limit = 500;
+        let offset = 0;
+        let allResults = [];
+        let hasMore = true;
 
-        // Simple query for 2025 data if possible, or just fetch all and filter.
-        // Rowstore limits to 100 by default, need to paginate or request more?
-        // Let's try fetching with a generous limit.
-        const response = await fetch(`${API_URL}?_limit=500&år=2025`);
+        while (hasMore) {
+            const response = await fetch(`${API_URL}?_limit=${limit}&_offset=${offset}&år=2025`);
 
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const results = data.results || [];
+            allResults = [...allResults, ...results];
+
+            if (results.length < limit) {
+                hasMore = false;
+            } else {
+                offset += limit;
+            }
         }
 
-        const data = await response.json();
-
-        if (!data.results || data.results.length === 0) {
+        if (allResults.length === 0) {
             throw new Error("No results found");
         }
 
         const uniqueMap = new Map();
 
-        data.results.forEach(row => {
-            const name = row.kommun;
-            if (name && !uniqueMap.has(name)) {
-                uniqueMap.set(name, {
-                    name: name,
-                    taxRate: parseFloat(row['summa, exkl. kyrkoavgift'])
-                });
+        allResults.forEach(row => {
+            let name = row.kommun;
+            if (name) {
+                // Normalize name to Title Case (e.g., STOCKHOLM -> Stockholm)
+                name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                // Handle special cases with hyphens or spaces if necessary
+                name = name.replace(/[- ]\w/g, match => match.toUpperCase());
+
+                if (!uniqueMap.has(name)) {
+                    uniqueMap.set(name, {
+                        name: name,
+                        taxRate: parseFloat(row['summa, exkl. kyrkoavgift'])
+                    });
+                }
             }
         });
 
-        return Array.from(uniqueMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+        return Array.from(uniqueMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
 
     } catch (error) {
         console.warn("Using fallback municipality data due to API error:", error);
