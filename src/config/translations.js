@@ -55,6 +55,7 @@ export const translations = {
             next: "Next",
             selectStrategy: "Select a Strategy",
             generatePlan: "Generate Plan",
+            skipStrategy: "Skip and go to planner",
             strategies: {
                 STRAT_TIME_STRETCHER: {
                     title: "Maximize Leave",
@@ -189,6 +190,7 @@ export const translations = {
             next: "Nästa",
             selectStrategy: "Välj en strategi",
             generatePlan: "Generera Plan",
+            skipStrategy: "Hoppa över och gå till planeraren",
             strategies: {
                 STRAT_TIME_STRETCHER: {
                     title: "Maxa Ledigheten",

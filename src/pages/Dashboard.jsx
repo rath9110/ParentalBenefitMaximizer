@@ -256,12 +256,15 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
             <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
                 <SEO title="Min Planering - Föräldraledighet.se" />
                 <header style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', background: 'white', zIndex: 10 }}>
-                    <div className="dashboard-header">
-                        <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <LanguageToggle />
-                            <Button onClick={onReset} style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }} variant="secondary">{t('dashboard.reset')}</Button>
+                    <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                            <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                <LanguageToggle />
+                                <Button onClick={onReset} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }} variant="secondary">{t('dashboard.reset')}</Button>
+                            </div>
                         </div>
+                        <Button variant="action" onClick={() => setIsExportOpen(true)} style={{ padding: '0.5rem 1.5rem', marginTop: '0.5rem' }}>{t('dashboard.savePlan')}</Button>
                     </div>
 
                     <div className="dashboard-controls">
@@ -370,26 +373,6 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                             </div>
                         </div>
 
-                    </div>
-                </div>
-
-                <div style={{
-                    borderTop: '1px solid #ddd', background: 'white', padding: '1rem 2rem',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    boxShadow: '0 -4px 10px rgba(0,0,0,0.05)', zIndex: 10
-                }}>
-                    <div>
-                        <div className="text-muted" style={{ fontSize: '0.8rem' }}>{t('dashboard.avgHouseholdNet')}</div>
-                        <div className="text-mono" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{scorecardNet.toLocaleString()} SEK</div>
-                    </div>
-
-                    <div style={{ textAlign: 'center' }}>
-                        <div className="text-muted" style={{ fontSize: '0.8rem' }}>{t('dashboard.allocated')}</div>
-                        <div>S: {counts.usedS} | L: {counts.usedL}</div>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                        <Button variant="action" onClick={() => setIsExportOpen(true)}>{t('dashboard.savePlan')}</Button>
                     </div>
                 </div>
             </div>

@@ -79,8 +79,8 @@ const OnboardingWizard = ({ onComplete }) => {
     const nextStep = () => setStep(step + 1);
     const prevStep = () => setStep(step - 1);
 
-    const finish = () => {
-        onComplete(formData);
+    const finish = (finalData = null) => {
+        onComplete(finalData || formData);
     };
 
     return (
@@ -231,6 +231,7 @@ const OnboardingWizard = ({ onComplete }) => {
                             </label>
                         </div>
 
+
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <Button onClick={nextStep}>{t('onboarding.next')}</Button>
                         </div>
@@ -239,10 +240,21 @@ const OnboardingWizard = ({ onComplete }) => {
 
                 {step === 2 && (
                     <div>
-                        <h3>{t('onboarding.selectStrategy')}</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0 }}>{t('onboarding.selectStrategy')}</h3>
+                            <Button
+                                variant="secondary"
+                                onClick={() => {
+                                    finish({ ...formData, strategy: STRATEGIES.NONE });
+                                }}
+                                style={{ background: 'transparent', color: '#666', border: 'none', fontSize: '0.85rem', textDecoration: 'underline', padding: 0 }}
+                            >
+                                {t('onboarding.skipStrategy')}
+                            </Button>
+                        </div>
 
                         <div className="grid-responsive" style={{ marginBottom: '2rem' }}>
-                            {Object.values(STRATEGIES).map(stratId => {
+                            {Object.values(STRATEGIES).filter(id => id !== STRATEGIES.NONE).map(stratId => {
                                 const details = STRATEGY_DETAILS[stratId];
                                 const isSelected = formData.strategy === stratId;
 
@@ -268,7 +280,7 @@ const OnboardingWizard = ({ onComplete }) => {
                             })}
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Button variant="secondary" onClick={prevStep} style={{ background: 'transparent', color: 'var(--color-text-main)' }}>{t('onboarding.back')}</Button>
                             <Button variant="action" onClick={finish}>{t('onboarding.generatePlan')}</Button>
                         </div>

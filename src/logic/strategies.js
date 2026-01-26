@@ -9,6 +9,7 @@ export const STRATEGIES = {
     GRANDPARENT: 'STRAT_GRANDPARENT',          // 6. Släktpusslet
     EQUALITY: 'STRAT_EQUALITY',                // 7. Dela Lika
     PART_TIME: 'STRAT_PART_TIME',              // 8. Mjukstarten
+    NONE: 'STRAT_NONE',                        // Skip strategy
 };
 
 export const STRATEGY_DETAILS = {
@@ -59,6 +60,7 @@ export const STRATEGY_DETAILS = {
  * Generates day-by-day allocation map.
  */
 export const generateStrategyPattern = (strategyId, startDate, totalSDays, totalLDays, userProfile, doubleDays = 0, childDobStr = null) => {
+    if (strategyId === STRATEGIES.NONE) return {};
     const allocation = {};
     let usedS = 0;
     let usedL = 0;

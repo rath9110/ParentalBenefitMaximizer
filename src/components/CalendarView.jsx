@@ -117,7 +117,7 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
             <div className="calendar-main-grid">
                 {days.map((m, mIdx) => (
                     <div key={`${m.year}-${m.month}`} style={{ breakInside: 'avoid' }}>
-                        <h4 style={{ marginBottom: '0.5rem', textTransform: 'capitalize', fontSize: '1rem', textAlign: 'center' }}>
+                        <h4 style={{ paddingTop: '2.5rem', marginBottom: '1.25rem', textTransform: 'capitalize', fontSize: '1rem', textAlign: 'center' }}>
                             {m.name} {m.year}
                         </h4>
 
@@ -128,7 +128,7 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
                         }}>
                             {/* Weekday headers */}
                             {weekdays.map(d => (
-                                <div key={d} style={{ textAlign: 'center', fontSize: '0.65rem', color: '#888', marginBottom: '2px' }}>{d}</div>
+                                <div key={d} style={{ textAlign: 'center', fontSize: '0.65rem', color: '#888', marginBottom: '0.5rem' }}>{d}</div>
                             ))}
 
                             {/* Padding */}
