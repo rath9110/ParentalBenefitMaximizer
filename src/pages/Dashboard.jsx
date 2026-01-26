@@ -96,13 +96,24 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
             const daysInMonth = new Date(y, mon + 1, 0).getDate();
             const monthKey = `${y}-${String(mon + 1).padStart(2, '0')}`;
 
-            let monGrossWorkA = 0;
+            let monGrossWorkA = userProfile.parentA.income;
             let monGrossBenefitA = 0;
-            let monGrossWorkB = 0;
+            let monGrossWorkB = userProfile.parentB.income;
             let monGrossBenefitB = 0;
 
-            const dailySalA = (userProfile.parentA.income * 12) / 365;
-            const dailySalB = (userProfile.parentB.income * 12) / 365;
+            // 1. Calculate workdays in this specific month for accurate deductions
+            let workdaysCount = 0;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${y}-${String(mon + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dateObj = new Date(y, mon, d);
+                const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+                const isHoliday = HOLIDAYS_2026.includes(dateStr);
+                if (!isWeekend && !isHoliday) workdaysCount++;
+            }
+
+            // Fallback for safety (though every month has workdays)
+            const divisor = workdaysCount || 22;
+
             // Cap at 10 PBB for 2026 (approx 49,333/mo)
             const sgiCap = STATUTORY_CONSTANTS_2026 ? (STATUTORY_CONSTANTS_2026.SGI_CAP_FULL / 12) : 49333;
 
@@ -119,56 +130,46 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 const allocB = allocationMap?.parentB || null;
 
                 // --- Parent A ---
-                let deductA = false;
-                let dayBenefitA = 0;
                 if (allocA) {
                     const extent = allocA.extent || 1;
                     if (allocA.type === 'S') {
                         const cappedIncome = Math.min(userProfile.parentA.income, sgiCap);
-                        dayBenefitA += ((cappedIncome * 12 * 0.8) / 365) * extent; // ~80%
+                        monGrossBenefitA += ((cappedIncome * 12 * 0.8) / 365) * extent;
                         if (userProfile.parentA.hasTopUp) {
-                            // Top-up (approx 10% of full salary)
-                            dayBenefitA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
+                            monGrossBenefitA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
                         }
                     } else {
-                        dayBenefitA += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
+                        monGrossBenefitA += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
                     }
-                    if (!isFreeTime) deductA = true;
-                }
 
-                if (deductA) {
-                    const extent = allocA?.extent || 1;
-                    monGrossWorkA += dailySalA * (1 - extent);
-                } else {
-                    monGrossWorkA += dailySalA;
+                    // Deduct from salary only if it was a working day
+                    if (!isFreeTime) {
+                        monGrossWorkA -= (userProfile.parentA.income / divisor) * extent;
+                    }
                 }
-                monGrossBenefitA += dayBenefitA;
 
                 // --- Parent B ---
-                let deductB = false;
-                let dayBenefitB = 0;
                 if (allocB) {
                     const extent = allocB.extent || 1;
                     if (allocB.type === 'S') {
                         const cappedIncome = Math.min(userProfile.parentB.income, sgiCap);
-                        dayBenefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
+                        monGrossBenefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
                         if (userProfile.parentB.hasTopUp) {
-                            dayBenefitB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
+                            monGrossBenefitB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
                         }
                     } else {
-                        dayBenefitB += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
+                        monGrossBenefitB += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
                     }
-                    if (!isFreeTime) deductB = true;
-                }
 
-                if (deductB) {
-                    const extent = allocB?.extent || 1;
-                    monGrossWorkB += dailySalB * (1 - extent);
-                } else {
-                    monGrossWorkB += dailySalB;
+                    if (!isFreeTime) {
+                        monGrossWorkB -= (userProfile.parentB.income / divisor) * extent;
+                    }
                 }
-                monGrossBenefitB += dayBenefitB;
             }
+
+            // High precision math cleanup
+            monGrossWorkA = Math.max(0, monGrossWorkA);
+            monGrossWorkB = Math.max(0, monGrossWorkB);
 
             // Calc monthly net (projected to annual bracket)
             const taxRate = userProfile.taxRate || 32.0;
