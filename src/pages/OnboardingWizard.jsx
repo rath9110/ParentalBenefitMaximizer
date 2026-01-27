@@ -43,19 +43,32 @@ const OnboardingWizard = ({ onComplete }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [formData.municipality]);
 
-    const filteredMunicipalities = municipalities.filter(m =>
-        m.name.toLowerCase().includes(muniSearch.toLowerCase())
-    );
+    const [loadingMunis, setLoadingMunis] = useState(true);
+
+    const filteredMunicipalities = municipalities.filter(m => {
+        // If the search exactly matches the current selected municipality, show all
+        // This is important for the initial UX when clicking the dropdown
+        if (muniSearch.toLowerCase() === formData.municipality.toLowerCase()) return true;
+        return m.name.toLowerCase().includes(muniSearch.toLowerCase());
+    });
 
     useEffect(() => {
         const loadMunis = async () => {
-            const list = await fetchMunicipalities();
-            setMunicipalities(list);
+            setLoadingMunis(true);
+            try {
+                const list = await fetchMunicipalities();
+                setMunicipalities(list);
 
-            // Set default from list if matching
-            const stockholm = list.find(m => m.name === 'Stockholm');
-            if (stockholm) {
-                setFormData(prev => ({ ...prev, municipality: stockholm.name, taxRate: stockholm.taxRate }));
+                // Set default from list if matching
+                const stockholm = list.find(m => m.name === 'Stockholm');
+                if (stockholm) {
+                    setFormData(prev => ({ ...prev, municipality: stockholm.name, taxRate: stockholm.taxRate }));
+                    setMuniSearch(stockholm.name);
+                }
+            } catch (err) {
+                console.error("Failed to load municipalities:", err);
+            } finally {
+                setLoadingMunis(false);
             }
         };
         loadMunis();
@@ -140,8 +153,15 @@ const OnboardingWizard = ({ onComplete }) => {
                                             maxHeight: '200px', overflowY: 'auto',
                                             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                                         }}>
-                                            {filteredMunicipalities.length === 0 ? (
-                                                <div style={{ padding: '0.5rem', color: '#888', fontSize: '0.9rem' }}>No matches</div>
+                                            {loadingMunis ? (
+                                                <div style={{ padding: '1rem', textAlign: 'center', color: '#666' }}>
+                                                    <span className="spinner" style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid #ccc', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite', marginRight: '8px' }}></span>
+                                                    {t('onboarding.loading') || "Loading..."}
+                                                </div>
+                                            ) : filteredMunicipalities.length === 0 ? (
+                                                <div style={{ padding: '1rem', color: '#888', fontSize: '0.9rem', textAlign: 'center' }}>
+                                                    {t('onboarding.noMatches') || "No matches found"}
+                                                </div>
                                             ) : (
                                                 filteredMunicipalities.map(m => (
                                                     <div
@@ -152,15 +172,20 @@ const OnboardingWizard = ({ onComplete }) => {
                                                             setIsMuniOpen(false);
                                                         }}
                                                         style={{
-                                                            padding: '0.5rem 1rem', cursor: 'pointer',
+                                                            padding: '0.6rem 1rem', cursor: 'pointer',
                                                             borderBottom: '1px solid #f9f9f9',
                                                             display: 'flex', justifyContent: 'space-between',
-                                                            backgroundColor: formData.municipality === m.name ? '#f0f7ff' : 'transparent'
+                                                            backgroundColor: formData.municipality === m.name ? '#f0f7ff' : 'transparent',
+                                                            transition: 'background-color 0.2s'
                                                         }}
-                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                                                        onMouseLeave={(e) => e.target.style.backgroundColor = formData.municipality === m.name ? '#f0f7ff' : 'transparent'}
+                                                        onMouseEnter={(e) => {
+                                                            if (formData.municipality !== m.name) e.currentTarget.style.backgroundColor = '#f5f5f5';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.backgroundColor = formData.municipality === m.name ? '#f0f7ff' : 'transparent';
+                                                        }}
                                                     >
-                                                        <span>{m.name}</span>
+                                                        <span style={{ fontWeight: formData.municipality === m.name ? 'bold' : 'normal' }}>{m.name}</span>
                                                         <span style={{ fontSize: '0.8rem', color: '#666' }}>{m.taxRate}%</span>
                                                     </div>
                                                 ))
