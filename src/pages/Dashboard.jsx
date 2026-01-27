@@ -9,9 +9,9 @@ import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { calculateAnnualMixedNet } from '../logic/taxCalculator';
 import ExportModal from '../components/ExportModal';
-
 const Dashboard = ({ benefitData, userProfile, onReset }) => {
     const { t } = useLanguage();
+
     // --- State ---
     // allocatedDays: Record<dateStr, { parentId: string, type: 'S' | 'L' }>
     const [allocatedDays, setAllocatedDays] = useState(() => {
@@ -35,6 +35,16 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
     const [activeType, setActiveType] = useState('S'); // 'S' or 'L'
     const [isExportOpen, setIsExportOpen] = useState(false);
 
+    // Early exit if data is missing (guard against crashes) - now AFTER hooks
+    if (!benefitData || !userProfile) {
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                <p>Unable to load planner. Missing session data.</p>
+                <button onClick={onReset} style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Go Back</button>
+            </div>
+        );
+    }
+
     // --- Logic ---
     const totalS = benefitData?.sDays || 0;
     const totalL = benefitData?.lDays || 0;
@@ -45,6 +55,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
         let usedS = 0;
         let usedL = 0;
         let usedS_Partner = 0;
+        if (!allocatedDays || !benefitData) return { usedS: 0, usedL: 0, usedS_Partner: 0 };
 
         Object.entries(allocatedDays).forEach(([dateStr, val]) => {
             // Robust parsing: "2026-01-01" -> 2026, 0, 1
@@ -84,6 +95,8 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
     // --- Monthly Income Calculation ---
     const monthlyIncomeData = useMemo(() => {
         const months = {}; // "2026-01" -> { netA, netB, grossWorkA... }
+        if (!userProfile || !benefitData) return months;
+
         const today = new Date();
         const startYear = today.getFullYear();
         const startMonth = today.getMonth(); // 0-11
@@ -96,9 +109,13 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
             const daysInMonth = new Date(y, mon + 1, 0).getDate();
             const monthKey = `${y}-${String(mon + 1).padStart(2, '0')}`;
 
-            let monGrossWorkA = userProfile.parentA.income;
+            // Safety check for userProfile nested properties
+            const incomeA = userProfile?.parentA?.income || 30000;
+            const incomeB = userProfile?.parentB?.income || 30000;
+
+            let monGrossWorkA = incomeA;
             let monGrossBenefitA = 0;
-            let monGrossWorkB = userProfile.parentB.income;
+            let monGrossWorkB = incomeB;
             let monGrossBenefitB = 0;
 
             // 1. Calculate workdays in this specific month for accurate deductions
@@ -133,10 +150,10 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 if (allocA) {
                     const extent = allocA.extent || 1;
                     if (allocA.type === 'S') {
-                        const cappedIncome = Math.min(userProfile.parentA.income, sgiCap);
+                        const cappedIncome = Math.min(incomeA, sgiCap);
                         monGrossBenefitA += ((cappedIncome * 12 * 0.8) / 365) * extent;
-                        if (userProfile.parentA.hasTopUp) {
-                            monGrossBenefitA += ((userProfile.parentA.income * 12 * 0.1) / 365) * extent;
+                        if (userProfile?.parentA?.hasTopUp) {
+                            monGrossBenefitA += ((incomeA * 12 * 0.1) / 365) * extent;
                         }
                     } else {
                         monGrossBenefitA += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
@@ -144,7 +161,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
 
                     // Deduct from salary only if it was a working day
                     if (!isFreeTime) {
-                        monGrossWorkA -= (userProfile.parentA.income / divisor) * extent;
+                        monGrossWorkA -= (incomeA / divisor) * extent;
                     }
                 }
 
@@ -152,17 +169,17 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 if (allocB) {
                     const extent = allocB.extent || 1;
                     if (allocB.type === 'S') {
-                        const cappedIncome = Math.min(userProfile.parentB.income, sgiCap);
+                        const cappedIncome = Math.min(incomeB, sgiCap);
                         monGrossBenefitB += ((cappedIncome * 12 * 0.8) / 365) * extent;
-                        if (userProfile.parentB.hasTopUp) {
-                            monGrossBenefitB += ((userProfile.parentB.income * 12 * 0.1) / 365) * extent;
+                        if (userProfile?.parentB?.hasTopUp) {
+                            monGrossBenefitB += ((incomeB * 12 * 0.1) / 365) * extent;
                         }
                     } else {
                         monGrossBenefitB += (STATUTORY_CONSTANTS_2026?.L_LEVEL_RATE || 180) * extent;
                     }
 
                     if (!isFreeTime) {
-                        monGrossWorkB -= (userProfile.parentB.income / divisor) * extent;
+                        monGrossWorkB -= (incomeB / divisor) * extent;
                     }
                 }
             }
@@ -197,6 +214,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
     }, [allocatedDays, userProfile]);
 
     const scorecardNet = useMemo(() => {
+        if (!monthlyIncomeData) return 0;
         // Average of first 12 months
         // Or average of months where "isMixed" is true?
         // User asked for monthly breakdown, but kept the average scorecard.
@@ -305,7 +323,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                {userProfile.parentA.name}
+                                {userProfile?.parentA?.name || 'You'}
                             </button>
                             <button
                                 onClick={() => setActiveParent('parentB')}
@@ -316,7 +334,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                {userProfile.parentB.name}
+                                {userProfile?.parentB?.name || 'Partner'}
                                 {activeParent === 'parentB' && activeType === 'S' && (
                                     <span style={{ fontSize: '0.7rem', display: 'block', fontWeight: 'normal', opacity: 0.8 }}>
                                         ({partnerSLeft} {t('landing.daysLeft')})
@@ -334,7 +352,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                         <div style={{ flex: 3, minWidth: 0 }}>
                             <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <p className="text-muted" style={{ fontSize: '0.9rem' }}>
-                                    {t('dashboard.painting')} <strong>{activeType}{t('dashboard.daysFor')}</strong> <strong>{activeParent === 'parentA' ? userProfile.parentA.name : userProfile.parentB.name}</strong>
+                                    {t('dashboard.painting')} <strong>{activeType}{t('dashboard.daysFor')}</strong> <strong>{activeParent === 'parentA' ? (userProfile?.parentA?.name || 'You') : (userProfile?.parentB?.name || 'Partner')}</strong>
                                 </p>
                             </div>
 

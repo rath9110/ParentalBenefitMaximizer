@@ -26,8 +26,11 @@ function AppContent() {
     };
 
     const handleOnboardingComplete = (profile) => {
+        console.log('[App] Onboarding complete. Profile:', profile);
+        if (!profile || !profile.parentA) {
+            console.error('[App] ERROR: Profile is missing parent data!', profile);
+        }
         setUserProfile(profile);
-        // Here we would run the initial optimization algorithms using benefitData and profile
         navigate('/planner');
     };
 

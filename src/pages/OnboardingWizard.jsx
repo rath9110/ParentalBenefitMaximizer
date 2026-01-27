@@ -54,19 +54,22 @@ const OnboardingWizard = ({ onComplete }) => {
 
     useEffect(() => {
         const loadMunis = async () => {
+            console.log('[OnboardingWizard] Starting to load municipalities...');
             setLoadingMunis(true);
             try {
                 const list = await fetchMunicipalities();
+                console.log(`[OnboardingWizard] Successfully loaded ${list.length} municipalities.`);
                 setMunicipalities(list);
 
                 // Set default from list if matching
                 const stockholm = list.find(m => m.name === 'Stockholm');
                 if (stockholm) {
+                    console.log('[OnboardingWizard] Setting default to Stockholm');
                     setFormData(prev => ({ ...prev, municipality: stockholm.name, taxRate: stockholm.taxRate }));
                     setMuniSearch(stockholm.name);
                 }
             } catch (err) {
-                console.error("Failed to load municipalities:", err);
+                console.error("[OnboardingWizard] Failed to load municipalities:", err);
             } finally {
                 setLoadingMunis(false);
             }
@@ -138,10 +141,15 @@ const OnboardingWizard = ({ onComplete }) => {
                                         type="text"
                                         value={muniSearch}
                                         onChange={(e) => {
-                                            setMuniSearch(e.target.value);
+                                            const val = e.target.value;
+                                            console.log(`[OnboardingWizard] Search input: "${val}"`);
+                                            setMuniSearch(val);
                                             setIsMuniOpen(true);
                                         }}
-                                        onFocus={() => setIsMuniOpen(true)}
+                                        onFocus={() => {
+                                            console.log('[OnboardingWizard] Search focused');
+                                            setIsMuniOpen(true);
+                                        }}
                                         placeholder={t('onboarding.searchMunicipality') || "Search municipality..."}
                                         style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                     />
@@ -258,7 +266,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button onClick={nextStep}>{t('onboarding.next')}</Button>
+                            <Button onClick={() => nextStep()}>{t('onboarding.next')}</Button>
                         </div>
                     </div>
                 )}
@@ -307,7 +315,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Button variant="secondary" onClick={prevStep} style={{ background: 'transparent', color: 'var(--color-text-main)' }}>{t('onboarding.back')}</Button>
-                            <Button variant="action" onClick={finish}>{t('onboarding.generatePlan')}</Button>
+                            <Button variant="action" onClick={() => finish()}>{t('onboarding.generatePlan')}</Button>
                         </div>
                     </div>
                 )}

@@ -35,20 +35,30 @@ const FALLBACK_MUNICIPALITIES = [
  */
 export const fetchMunicipalities = async () => {
     try {
-        const limit = 500;
+        const limit = 200;
         let offset = 0;
         let allResults = [];
         let hasMore = true;
 
         while (hasMore) {
-            const response = await fetch(`${API_URL}?_limit=${limit}&_offset=${offset}&år=2025`);
+            const params = new URLSearchParams({
+                _limit: limit.toString(),
+                _offset: offset.toString(),
+                'år': '2025'
+            });
+            const url = `${API_URL}?${params.toString()}`;
+            console.log(`[taxService] Fetching: ${url}`);
+
+            const response = await fetch(url);
 
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                console.error(`[taxService] API Error: ${response.status} at offset ${offset}`);
+                break; // Stop fetching more, use what we have or fallback
             }
 
             const data = await response.json();
             const results = data.results || [];
+            console.log(`[taxService] Got ${results.length} results at offset ${offset}`);
             allResults = [...allResults, ...results];
 
             if (results.length < limit) {
@@ -58,8 +68,10 @@ export const fetchMunicipalities = async () => {
             }
         }
 
+        console.log(`[taxService] Total raw records: ${allResults.length}`);
+
         if (allResults.length === 0) {
-            throw new Error("No results found");
+            throw new Error("No tax data found in API");
         }
 
         const uniqueMap = new Map();
@@ -81,7 +93,10 @@ export const fetchMunicipalities = async () => {
             }
         });
 
-        return Array.from(uniqueMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+        const finalSorted = Array.from(uniqueMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+        console.log(`[taxService] Unique municipalities normalized: ${finalSorted.length}`);
+        console.log(`[taxService] First 5:`, finalSorted.slice(0, 5).map(m => m.name));
+        return finalSorted;
 
     } catch (error) {
         console.warn("Using fallback municipality data due to API error:", error);
