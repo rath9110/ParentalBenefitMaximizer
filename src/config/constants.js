@@ -19,11 +19,30 @@ export const HOLIDAYS_2026 = [
     '2026-04-03', // Långfredagen
     '2026-04-06', // Annandag påsk
     '2026-05-01', // Första maj
-    '2026-05-14', // Kristi Himmelsfärdsdag (Thursday)
+    '2026-05-14', // Kristi Himmelsfärdsdag
     '2026-06-06', // Nationaldagen
-    '2026-06-19', // Midsommarafton (De facto holiday)
-    '2026-12-24', // Julafton (De facto holiday)
+    '2026-06-19', // Midsommarafton
+    '2026-10-31', // Alla helgons dag
+    '2026-12-24', // Julafton
     '2026-12-25', // Juldagen
     '2026-12-26', // Annandag jul
-    '2026-12-31'  // Nyårsafton (De facto holiday)
+    '2026-12-31'  // Nyårsafton
 ];
+
+export const HOLIDAYS_2027 = [
+    '2027-01-01', // Nyårsdagen
+    '2027-01-06', // Trettondedag jul
+    '2027-03-26', // Långfredagen
+    '2027-03-29', // Annandag påsk
+    '2027-05-01', // Första maj
+    '2027-05-06', // Kristi Himmelsfärdsdag
+    '2027-06-06', // Nationaldagen
+    '2027-06-25', // Midsommarafton
+    '2027-11-06', // Alla helgons dag
+    '2027-12-24', // Julafton
+    '2027-12-25', // Juldagen
+    '2027-12-26', // Annandag jul
+    '2027-12-31'  // Nyårsafton
+];
+
+export const HOLIDAYS = [...HOLIDAYS_2026, ...HOLIDAYS_2027];

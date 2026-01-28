@@ -1,4 +1,4 @@
-import { STATUTORY_CONSTANTS_2026, HOLIDAYS_2026 } from '../config/constants.js';
+import { STATUTORY_CONSTANTS_2026, HOLIDAYS } from '../config/constants.js';
 
 export const STRATEGIES = {
     TIME_STRETCHER: 'STRAT_TIME_STRETCHER',    // 1. Maxa Ledigheten
@@ -121,7 +121,7 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
 
         const dayOfWeek = current.getDay(); // 0=Sun, 6=Sat
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-        const isHoliday = HOLIDAYS_2026.includes(dateStr);
+        const isHoliday = HOLIDAYS.includes(dateStr);
 
         // Age Calc
         const ageDiffMs = current - childDob;
@@ -260,7 +260,7 @@ export const generateStrategyPattern = (strategyId, startDate, totalSDays, total
                     const tmrwStr = toLocal(tmrw);
                     const yestStr = toLocal(yest);
 
-                    const isSqueeze = HOLIDAYS_2026.includes(tmrwStr) || HOLIDAYS_2026.includes(yestStr);
+                    const isSqueeze = HOLIDAYS.includes(tmrwStr) || HOLIDAYS.includes(yestStr);
 
                     if (isSqueeze) {
                         shouldBook = true;

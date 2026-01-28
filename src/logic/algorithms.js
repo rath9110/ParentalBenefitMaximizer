@@ -1,4 +1,4 @@
-import { STATUTORY_CONSTANTS_2026, HOLIDAYS_2026 } from '../config/constants.js';
+import { STATUTORY_CONSTANTS_2026, HOLIDAYS } from '../config/constants.js';
 
 /**
  * Algo 1: SGI Fortress (Protection)
@@ -60,7 +60,7 @@ export const findHolidayHacks = (year = 2026) => {
     // Simple logic: If Thursday is a holiday, Friday is a squeeze day.
     // In a real app, this would check days of the week for all holidays.
     const hacks = [];
-    HOLIDAYS_2026.forEach(dateStr => {
+    HOLIDAYS.forEach(dateStr => {
         const date = new Date(dateStr);
         const dayOfWeek = date.getDay(); // 0Sun, 1Mon... 4Thu, 5Fri
 

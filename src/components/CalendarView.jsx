@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { STATUTORY_CONSTANTS_2026, HOLIDAYS_2026 } from '../config/constants';
+import { STATUTORY_CONSTANTS_2026, HOLIDAYS } from '../config/constants';
 import { useLanguage } from '../context/LanguageContext';
 
 const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = new Date() }) => {
@@ -63,7 +63,7 @@ const CalendarView = ({ allocatedDays, activeParent, onToggleDay, startDate = ne
     const getDayStyle = (dateStr, dayOfWeek) => {
         const owners = allocatedDays[dateStr] || {}; // Now a map
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        const isHoliday = HOLIDAYS_2026.includes(dateStr);
+        const isHoliday = HOLIDAYS.includes(dateStr);
 
         let bg = 'white';
         let color = '#333';

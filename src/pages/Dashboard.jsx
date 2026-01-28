@@ -3,7 +3,7 @@ import Card from '../components/Card';
 import CalendarView from '../components/CalendarView';
 import Button from '../components/Button';
 import SEO from '../components/SEO';
-import { HOLIDAYS_2026, STATUTORY_CONSTANTS_2026 } from '../config/constants';
+import { HOLIDAYS, STATUTORY_CONSTANTS_2026 } from '../config/constants';
 import { generateStrategyPattern } from '../logic/strategies';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
@@ -63,7 +63,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
             const date = new Date(y, m - 1, d); // Local midnight
             const dayOfWeek = date.getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-            const isHoliday = HOLIDAYS_2026.includes(dateStr);
+            const isHoliday = HOLIDAYS.includes(dateStr);
 
             // Count all allocations, even on weekends/holidays if they exist in the map
 
@@ -124,7 +124,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 const dateStr = `${y}-${String(mon + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const dateObj = new Date(y, mon, d);
                 const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-                const isHoliday = HOLIDAYS_2026.includes(dateStr);
+                const isHoliday = HOLIDAYS.includes(dateStr);
                 if (!isWeekend && !isHoliday) workdaysCount++;
             }
 
@@ -139,7 +139,7 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 const dateObj = new Date(y, mon, d);
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                const isHoliday = HOLIDAYS_2026.includes(dateStr);
+                const isHoliday = HOLIDAYS.includes(dateStr);
                 const isFreeTime = isWeekend || isHoliday;
 
                 const allocationMap = allocatedDays[dateStr];

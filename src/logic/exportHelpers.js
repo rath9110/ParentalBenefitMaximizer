@@ -1,4 +1,4 @@
-import { HOLIDAYS_2026 } from '../config/constants.js';
+import { HOLIDAYS } from '../config/constants.js';
 
 /**
  * Calculates leave periods, weekly patterns, and monthly stats.
