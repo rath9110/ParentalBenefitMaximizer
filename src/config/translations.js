@@ -59,7 +59,7 @@ export const translations = {
             strategies: {
                 STRAT_TIME_STRETCHER: {
                     title: "Maximize Leave",
-                    description: "Goal: Stay home longest. Save all days year 1. Afterwards, take exactly what's needed to protect your income."
+                    description: "Goal: Stay home longest (100% leave). Save days year 1. From year 2 onwards, take contiguous 5-day weeks to maximize total duration."
                 },
                 STRAT_CASH_MAXER: {
                     title: "Maximize Payout",
@@ -194,7 +194,7 @@ export const translations = {
             strategies: {
                 STRAT_TIME_STRETCHER: {
                     title: "Maxa Ledigheten",
-                    description: "Mål: Var hemma längst. Spara alla dagar under år 1. Efteråt tar vi ut precis det som krävs för att skydda din inkomst."
+                    description: "Mål: Var hemma längst (100% ledig). Spara alla dagar år 1. Från år 2 tar vi ut sammanhängande block om 5 dagar/vecka för att maxa tiden."
                 },
                 STRAT_CASH_MAXER: {
                     title: "Maxa Utbetalningen",
