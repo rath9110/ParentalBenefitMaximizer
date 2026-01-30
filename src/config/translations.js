@@ -101,6 +101,8 @@ export const translations = {
             avgHouseholdNet: "Avg. Household Net",
             allocated: "Allocated",
             savePlan: "Save Plan",
+            sharePlan: "Share Plan",
+            copied: "Copied!",
             partnerLimit: "Partner limit reached! {days} days reserved."
         },
         calendar: {
@@ -236,7 +238,9 @@ export const translations = {
             avgHouseholdNet: "Genomsnittlig Hushållsinkomst",
             allocated: "Allokerat",
             savePlan: "Spara Plan",
-            partnerLimit: "Partnergräns nådd! {days} dagar reserverade."
+            sharePlan: "Dela plan",
+            copied: "Kopierad!",
+            partnerLimit: "Partnergräns nådd! {days} days reserverade."
         },
         calendar: {
             weekdays: ['Må', 'Ti', 'On', 'To', 'Fr', 'Lö', 'Sö'],

@@ -9,15 +9,73 @@ import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from '../components/LanguageToggle';
 import { calculateAnnualMixedNet } from '../logic/taxCalculator';
 import ExportModal from '../components/ExportModal';
-const Dashboard = ({ benefitData, userProfile, onReset }) => {
+const getYMD = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
+const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCalendar }) => {
     const { t } = useLanguage();
+    const [sharedPlanLoaded, setSharedPlanLoaded] = useState(false);
 
     // --- State ---
-    // allocatedDays: Record<dateStr, { parentId: string, type: 'S' | 'L' }>
     const [allocatedDays, setAllocatedDays] = useState(() => {
-        // Auto-fill logic on init
-        if (userProfile && userProfile.strategy) {
-            // CORRECTED CALL: 6 Arguments
+        // 1. Prioritize Shared Link (Highest Priority)
+        // If it's a shared plan, we ONLY care about what's in the link or an empty start.
+        // We do NOT want to fall back to LocalStorage or Strategy patterns.
+        if (isSharedPlan) {
+            console.log('[Dashboard] Initializing from Shared Plan. cal length:', sharedCalendar?.length || 0);
+            if (sharedCalendar && userProfile?.childDob) {
+                try {
+                    const cal = sharedCalendar;
+                    const [dy, dm, dd] = userProfile.childDob.split('-').map(Number);
+                    const map = {};
+
+                    for (let i = 0; i < Math.min(cal.length, 730); i++) {
+                        const char = cal[i];
+                        if (char === '0') continue;
+
+                        const current = new Date(dy, dm - 1, dd + i);
+                        const ds = getYMD(current);
+
+                        // Encoding: 0:None, 1:A-S, 2:A-L, 3:B-S, 4:B-L, 5:Double-S, 6:A-s(0.125), 7:A-s(0.25), 8:B-s(0.125)
+                        if (char === '1') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 1 } };
+                        else if (char === '2') map[ds] = { parentA: { parentId: 'parentA', type: 'L', extent: 1 } };
+                        else if (char === '3') map[ds] = { parentB: { parentId: 'parentB', type: 'S', extent: 1 } };
+                        else if (char === '4') map[ds] = { parentB: { parentId: 'parentB', type: 'L', extent: 1 } };
+                        else if (char === '5') map[ds] = {
+                            parentA: { parentId: 'parentA', type: 'S', extent: 1 },
+                            parentB: { parentId: 'parentB', type: 'S', extent: 1 }
+                        };
+                        else if (char === '6') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 0.125 } };
+                        else if (char === '7') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 0.25 } };
+                        else if (char === '8') map[ds] = { parentB: { parentId: 'parentB', type: 'S', extent: 0.125 } };
+                    }
+
+                    if (Object.keys(map).length > 0) {
+                        setTimeout(() => setSharedPlanLoaded(true), 200);
+                        return map;
+                    }
+                } catch (err) {
+                    console.error("[Dashboard] Shared calendar parse failed:", err);
+                }
+            }
+            console.log('[Dashboard] Shared plan detected but no valid calendar string found. Starting empty.');
+            return {};
+        }
+
+        // 2. LocalStorage (Manual edits from previous local session)
+        const saved = localStorage.getItem('parental_allocated_days');
+        if (saved && saved !== '{}') {
+            console.log('[Dashboard] Loading manual edits from LocalStorage.');
+            return JSON.parse(saved);
+        }
+
+        // 3. Strategy Pattern (New session default)
+        if (userProfile?.strategy && userProfile.strategy !== 'STRAT_NONE') {
+            console.log('[Dashboard] No saved data. Generating strategy pattern:', userProfile.strategy);
             return generateStrategyPattern(
                 userProfile.strategy,
                 new Date(),
@@ -28,12 +86,75 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 userProfile.childDob
             );
         }
+
+        console.log('[Dashboard] No shared data, no storage, no strategy. Empty start.');
         return {};
     });
+
+    // Save manual edits to LocalStorage
+    React.useEffect(() => {
+        localStorage.setItem('parental_allocated_days', JSON.stringify(allocatedDays));
+    }, [allocatedDays]);
 
     const [activeParent, setActiveParent] = useState('parentA');
     const [activeType, setActiveType] = useState('S'); // 'S' or 'L'
     const [isExportOpen, setIsExportOpen] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
+
+    const handleShare = () => {
+        // Compact encoding for 730 days (1 char per day)
+        // 0: None, 1: A-S, 2: A-L, 3: B-S, 4: B-L, 5: Double-S, 6: A-s(0.125), 7: A-s(0.25), 8: B-s(0.125)
+        const [dy, dm, dd] = userProfile.childDob.split('-').map(Number);
+        let calStr = "";
+
+        for (let i = 0; i < 730; i++) {
+            const current = new Date(dy, dm - 1, dd + i);
+            const ds = getYMD(current);
+            const alloc = allocatedDays[ds];
+
+            if (!alloc) { calStr += "0"; continue; }
+            const a = alloc.parentA;
+            const b = alloc.parentB;
+
+            if (a && b && a.type === 'S' && b.type === 'S') { calStr += "5"; }
+            else if (a && a.type === 'S') {
+                if (a.extent === 0.125) calStr += "6";
+                else if (a.extent === 0.25) calStr += "7";
+                else calStr += "1";
+            }
+            else if (a && a.type === 'L') { calStr += "2"; }
+            else if (b && b.type === 'S') {
+                if (b.extent === 0.125) calStr += "8";
+                else calStr += "3";
+            }
+            else if (b && b.type === 'L') { calStr += "4"; }
+            else { calStr += "0"; }
+        }
+
+        const params = new URLSearchParams();
+        params.set('s', benefitData.sDays);
+        params.set('l', benefitData.lDays);
+        params.set('r', benefitData.reservedDays);
+        params.set('d', benefitData.doubleDays);
+        params.set('dob', userProfile.childDob);
+        params.set('mun', userProfile.municipality?.id || '');
+        params.set('mun_name', userProfile.municipality?.name || '');
+        params.set('pa_n', userProfile.parentA?.name || '');
+        params.set('pa_inc', userProfile.parentA?.income || '');
+        params.set('pa_tu', userProfile.parentA?.hasTopUp ? '1' : '0');
+        params.set('pb_n', userProfile.parentB?.name || '');
+        params.set('pb_inc', userProfile.parentB?.income || '');
+        params.set('pb_tu', userProfile.parentB?.hasTopUp ? '1' : '0');
+        params.set('strat', userProfile.strategy || 'STRAT_NONE');
+        params.set('cal', calStr);
+
+        const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        });
+    };
 
     // Early exit if data is missing (guard against crashes) - now AFTER hooks
     if (!benefitData || !userProfile) {
@@ -277,13 +398,29 @@ const Dashboard = ({ benefitData, userProfile, onReset }) => {
                 <header style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', background: 'white', zIndex: 10 }}>
                     <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <h2 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>{t('dashboard.appName')}</h2>
+                                {sharedPlanLoaded && (
+                                    <span style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', fontSize: '0.65rem', fontWeight: 'bold', padding: '0.2rem 0.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Döpt plan
+                                    </span>
+                                )}
+                            </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
                                 <LanguageToggle />
                                 <Button onClick={onReset} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }} variant="secondary">{t('dashboard.reset')}</Button>
                             </div>
                         </div>
-                        <Button variant="action" onClick={() => setIsExportOpen(true)} style={{ padding: '0.5rem 1.5rem', marginTop: '0.5rem' }}>{t('dashboard.savePlan')}</Button>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                            <Button
+                                variant="secondary"
+                                onClick={handleShare}
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                            >
+                                {copySuccess ? t('dashboard.copied') : t('dashboard.sharePlan')}
+                            </Button>
+                            <Button variant="action" onClick={() => setIsExportOpen(true)} style={{ padding: '0.5rem 1rem' }}>{t('dashboard.savePlan')}</Button>
+                        </div>
                     </div>
 
                     <div className="dashboard-controls">
