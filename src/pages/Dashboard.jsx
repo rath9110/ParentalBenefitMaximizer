@@ -33,14 +33,15 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
                     const [dy, dm, dd] = userProfile.childDob.split('-').map(Number);
                     const map = {};
 
-                    for (let i = 0; i < Math.min(cal.length, 730); i++) {
+                    for (let i = 0; i < cal.length; i++) {
                         const char = cal[i];
                         if (char === '0') continue;
 
-                        const current = new Date(dy, dm - 1, dd + i);
+                        // Match the -200 offset used in handleShare
+                        const current = new Date(dy, dm - 1, dd + (i - 200));
                         const ds = getYMD(current);
 
-                        // Encoding: 0:None, 1:A-S, 2:A-L, 3:B-S, 4:B-L, 5:Double-S, 6:A-s(0.125), 7:A-s(0.25), 8:B-s(0.125)
+                        // De-mapping: 0:None, 1:A-S, 2:A-L, 3:B-S, 4:B-L, 5:AA-SS, 6:A-S+B-L, 7:A-L+B-S, 8:A-L+B-L, A/B/C: Fractions
                         if (char === '1') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 1 } };
                         else if (char === '2') map[ds] = { parentA: { parentId: 'parentA', type: 'L', extent: 1 } };
                         else if (char === '3') map[ds] = { parentB: { parentId: 'parentB', type: 'S', extent: 1 } };
@@ -49,9 +50,21 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
                             parentA: { parentId: 'parentA', type: 'S', extent: 1 },
                             parentB: { parentId: 'parentB', type: 'S', extent: 1 }
                         };
-                        else if (char === '6') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 0.125 } };
-                        else if (char === '7') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 0.25 } };
-                        else if (char === '8') map[ds] = { parentB: { parentId: 'parentB', type: 'S', extent: 0.125 } };
+                        else if (char === '6') map[ds] = {
+                            parentA: { parentId: 'parentA', type: 'S', extent: 1 },
+                            parentB: { parentId: 'parentB', type: 'L', extent: 1 }
+                        };
+                        else if (char === '7') map[ds] = {
+                            parentA: { parentId: 'parentA', type: 'L', extent: 1 },
+                            parentB: { parentId: 'parentB', type: 'S', extent: 1 }
+                        };
+                        else if (char === '8') map[ds] = {
+                            parentA: { parentId: 'parentA', type: 'L', extent: 1 },
+                            parentB: { parentId: 'parentB', type: 'L', extent: 1 }
+                        };
+                        else if (char === 'A') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 0.125 } };
+                        else if (char === 'B') map[ds] = { parentA: { parentId: 'parentA', type: 'S', extent: 0.25 } };
+                        else if (char === 'C') map[ds] = { parentB: { parentId: 'parentB', type: 'S', extent: 0.125 } };
                     }
 
                     if (Object.keys(map).length > 0) {
@@ -102,13 +115,13 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
     const [copySuccess, setCopySuccess] = useState(false);
 
     const handleShare = () => {
-        // Compact encoding for 730 days (1 char per day)
-        // 0: None, 1: A-S, 2: A-L, 3: B-S, 4: B-L, 5: Double-S, 6: A-s(0.125), 7: A-s(0.25), 8: B-s(0.125)
+        // Compact encoding for 1000 days starting 200 days BEFORE birth
         const [dy, dm, dd] = userProfile.childDob.split('-').map(Number);
         let calStr = "";
 
-        for (let i = 0; i < 730; i++) {
-            const current = new Date(dy, dm - 1, dd + i);
+        for (let i = 0; i < 1000; i++) {
+            // Offset by -200 days to capture pregnancy window
+            const current = new Date(dy, dm - 1, dd + (i - 200));
             const ds = getYMD(current);
             const alloc = allocatedDays[ds];
 
@@ -116,18 +129,27 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
             const a = alloc.parentA;
             const b = alloc.parentB;
 
-            if (a && b && a.type === 'S' && b.type === 'S') { calStr += "5"; }
-            else if (a && a.type === 'S') {
-                if (a.extent === 0.125) calStr += "6";
-                else if (a.extent === 0.25) calStr += "7";
-                else calStr += "1";
+            // Map common combined states
+            if (a && b) {
+                if (a.type === 'S' && b.type === 'S') calStr += "5";
+                else if (a.type === 'S' && b.type === 'L') calStr += "6";
+                else if (a.type === 'L' && b.type === 'S') calStr += "7";
+                else if (a.type === 'L' && b.type === 'L') calStr += "8";
+                else calStr += "5"; // Mixed S default
             }
-            else if (a && a.type === 'L') { calStr += "2"; }
-            else if (b && b.type === 'S') {
-                if (b.extent === 0.125) calStr += "8";
-                else calStr += "3";
+            else if (a) {
+                if (a.type === 'S') {
+                    if (a.extent === 0.125) calStr += "A";
+                    else if (a.extent === 0.25) calStr += "B";
+                    else calStr += "1";
+                } else calStr += "2"; // L
             }
-            else if (b && b.type === 'L') { calStr += "4"; }
+            else if (b) {
+                if (b.type === 'S') {
+                    if (b.extent === 0.125) calStr += "C";
+                    else calStr += "3";
+                } else calStr += "4"; // L
+            }
             else { calStr += "0"; }
         }
 
