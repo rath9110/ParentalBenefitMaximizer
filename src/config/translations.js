@@ -100,8 +100,8 @@ export const translations = {
             daysFor: "-Days for",
             avgHouseholdNet: "Avg. Household Net",
             allocated: "Allocated",
-            savePlan: "Save Plan",
-            sharePlan: "Share Plan",
+            savePlan: "Print Plan",
+            sharePlan: "Share",
             copied: "Copied!",
             partnerLimit: "Partner limit reached! {days} days reserved."
         },
@@ -237,8 +237,8 @@ export const translations = {
             daysFor: "-dagar för",
             avgHouseholdNet: "Genomsnittlig Hushållsinkomst",
             allocated: "Allokerat",
-            savePlan: "Spara Plan",
-            sharePlan: "Dela plan",
+            savePlan: "Skriv ut",
+            sharePlan: "Dela",
             copied: "Kopierad!",
             partnerLimit: "Partnergräns nådd! {days} days reserverade."
         },

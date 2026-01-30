@@ -434,14 +434,14 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                            <Button variant="secondary" onClick={() => setIsExportOpen(true)} style={{ padding: '0.5rem 1rem' }}>{t('dashboard.savePlan')}</Button>
                             <Button
-                                variant="secondary"
+                                variant="action"
                                 onClick={handleShare}
                                 style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
                             >
                                 {copySuccess ? t('dashboard.copied') : t('dashboard.sharePlan')}
                             </Button>
-                            <Button variant="action" onClick={() => setIsExportOpen(true)} style={{ padding: '0.5rem 1rem' }}>{t('dashboard.savePlan')}</Button>
                         </div>
                     </div>
 
