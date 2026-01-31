@@ -220,7 +220,10 @@ const OnboardingWizard = ({ onComplete }) => {
                                 <input
                                     type="number"
                                     value={formData.parentA.income}
-                                    onChange={(e) => updateParent('parentA', 'income', parseInt(e.target.value) || 0)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateParent('parentA', 'income', val === '' ? '' : parseInt(val));
+                                    }}
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
@@ -250,7 +253,10 @@ const OnboardingWizard = ({ onComplete }) => {
                                 <input
                                     type="number"
                                     value={formData.parentB.income}
-                                    onChange={(e) => updateParent('parentB', 'income', parseInt(e.target.value) || 0)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateParent('parentB', 'income', val === '' ? '' : parseInt(val));
+                                    }}
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #ccc' }}
                                 />
                             </div>
