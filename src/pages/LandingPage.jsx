@@ -100,6 +100,8 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                         </div>
                         <input
                             type="number"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             placeholder={t('landing.placeholderS')}
                             value={inputs.sDays}
                             onChange={(e) => handleChange('sDays', e.target.value)}
@@ -148,6 +150,8 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             </div>
                             <input
                                 type="number"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 placeholder={t('landing.placeholderReserved')}
                                 value={inputs.reservedDays}
                                 onChange={(e) => handleChange('reservedDays', e.target.value)}
@@ -172,6 +176,8 @@ const LandingPage = ({ onDataParsed, onNavigate }) => {
                             </div>
                             <input
                                 type="number"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 placeholder={t('landing.placeholderDouble')}
                                 value={inputs.doubleDays}
                                 onChange={(e) => {

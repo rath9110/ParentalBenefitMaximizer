@@ -219,6 +219,8 @@ const OnboardingWizard = ({ onComplete }) => {
                                 <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>{t('onboarding.monthlyIncome')}</label>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={formData.parentA.income}
                                     onChange={(e) => {
                                         const val = e.target.value;
@@ -252,6 +254,8 @@ const OnboardingWizard = ({ onComplete }) => {
                                 <label style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>{t('onboarding.monthlyIncome')}</label>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={formData.parentB.income}
                                     onChange={(e) => {
                                         const val = e.target.value;
