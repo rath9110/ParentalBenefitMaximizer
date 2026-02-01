@@ -94,8 +94,8 @@ export const translations = {
         dashboard: {
             appName: "FöräldraOptimizer",
             reset: "Reset",
-            sBank: "S-BANK",
-            lBank: "L-BANK",
+            sBank: "S-DAYS",
+            lBank: "L-DAYS",
             painting: "Painting",
             daysFor: "-Days for",
             avgHouseholdNet: "Avg. Household Net",
@@ -103,7 +103,8 @@ export const translations = {
             savePlan: "Print Plan",
             sharePlan: "Share",
             copied: "Copied!",
-            partnerLimit: "Partner limit reached! {days} days reserved."
+            partnerLimit: "Partner limit reached! {days} days reserved.",
+            firstYearGap: "The child must have a parent at home for the entire first year"
         },
         calendar: {
             weekdays: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
@@ -231,8 +232,8 @@ export const translations = {
         dashboard: {
             appName: "FöräldraOptimizer",
             reset: "Återställ",
-            sBank: "S-BANK",
-            lBank: "L-BANK",
+            sBank: "S-DAGAR",
+            lBank: "L-DAGAR",
             painting: "Målar",
             daysFor: "-dagar för",
             avgHouseholdNet: "Genomsnittlig Hushållsinkomst",
@@ -240,7 +241,8 @@ export const translations = {
             savePlan: "Skriv ut",
             sharePlan: "Dela",
             copied: "Kopierad!",
-            partnerLimit: "Partnergräns nådd! {days} days reserverade."
+            partnerLimit: "Partnergräns nådd! {days} days reserverade.",
+            firstYearGap: "Barnet måste ha en förälder hemma hela första året"
         },
         calendar: {
             weekdays: ['Må', 'Ti', 'On', 'To', 'Fr', 'Lö', 'Sö'],

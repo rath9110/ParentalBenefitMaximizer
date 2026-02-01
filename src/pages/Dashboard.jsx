@@ -235,6 +235,27 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
     const partnerMaxS = Math.max(0, totalS - reservedS);
     const partnerSLeft = Math.round((partnerMaxS - counts.usedS_Partner) * 10) / 10;
 
+    // Check if there is a skip on any weekday in the first 365 days
+    const hasFirstYearGap = useMemo(() => {
+        if (!userProfile?.childDob || !allocatedDays) return false;
+
+        const dob = new Date(userProfile.childDob);
+        // We check 365 days including the birth date
+        for (let i = 0; i < 365; i++) {
+            const current = new Date(dob.getFullYear(), dob.getMonth(), dob.getDate() + i);
+            const dayOfWeek = current.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+            if (!isWeekend) {
+                const ds = getYMD(current);
+                if (!allocatedDays[ds] || Object.keys(allocatedDays[ds]).length === 0) {
+                    return true; // Found a gap on a weekday
+                }
+            }
+        }
+        return false;
+    }, [allocatedDays, userProfile.childDob]);
+
     // --- Monthly Income Calculation ---
     const monthlyIncomeData = useMemo(() => {
         const months = {}; // "2026-01" -> { netA, netB, grossWorkA... }
@@ -502,6 +523,23 @@ const Dashboard = ({ benefitData, userProfile, onReset, isSharedPlan, sharedCale
                             </button>
                         </div>
                     </div>
+                    {hasFirstYearGap && (
+                        <div style={{
+                            backgroundColor: '#FFE5E5',
+                            color: '#D32F2F',
+                            padding: '0.6rem 1rem',
+                            textAlign: 'center',
+                            fontSize: '0.9rem',
+                            fontWeight: 'bold',
+                            borderTop: '1px solid rgba(211, 47, 47, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <span>⚠️</span> {t('dashboard.firstYearGap') || "Barnet måste ha en förälder hemma hela första året"}
+                        </div>
+                    )}
                 </header>
 
                 <div style={{ flex: 1, overflowY: 'auto', position: 'relative', background: 'var(--color-bg)' }}>
