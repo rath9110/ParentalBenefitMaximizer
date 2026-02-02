@@ -1,6 +1,6 @@
 
 import { parseMinaSidorText } from './utils/parser.js';
-import { checkSGIProtection, optimizePension, calculateEmployerArbitrage, findHolidayHacks, checkProxyTransfer, calculatePartTimeMatch } from './logic/algorithms.js';
+import { checkSGIProtection, optimizePension, calculateEmployerArbitrage, findHolidayHacks, checkProxyTransfer, calculatePartTimeMatch, checkFirstYearCoverage } from './logic/algorithms.js';
 
 console.log('--- STARTING VERIFICATION ---');
 
@@ -53,6 +53,35 @@ if (hacks.length > 0) {
     console.log('✅ Holiday Algo: PASS');
 } else {
     console.log('⚠️ Holiday Algo: NO MATCHES (Check constraints)');
+}
+
+// First Year Coverage
+console.log('\n--- 3. First Year Coverage Test ---');
+const dob = '2026-01-01';
+const emptyAlloc = {};
+const gapTest = checkFirstYearCoverage(dob, emptyAlloc);
+console.log('Gap Test (Should have gap):', gapTest);
+if (gapTest.hasGap && gapTest.message === "Barnet måste ha en förälder hemma hela första året") {
+    console.log('✅ First Year Coverage (Gap): PASS');
+} else {
+    console.error('❌ First Year Coverage (Gap): FAIL');
+}
+
+// Dummy alloc for first year weekdays (simplified test)
+const fullAlloc = {};
+const startDate = new Date(dob);
+for (let i = 0; i < 400; i++) {
+    const d = new Date(dob);
+    d.setDate(startDate.getDate() + i);
+    const ds = d.toISOString().split('T')[0];
+    fullAlloc[ds] = { parentA: { type: 'S' } };
+}
+const noGapTest = checkFirstYearCoverage(dob, fullAlloc);
+console.log('No Gap Test:', noGapTest.hasGap ? 'Gap found' : 'No gap');
+if (!noGapTest.hasGap) {
+    console.log('✅ First Year Coverage (No Gap): PASS');
+} else {
+    console.error('❌ First Year Coverage (No Gap): FAIL');
 }
 
 console.log('\n--- VERIFICATION COMPLETE ---');

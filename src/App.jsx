@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage';
 import OnboardingWizard from './pages/OnboardingWizard';
 import Dashboard from './pages/Dashboard';
 import './App.css';
+import { Analytics } from "@vercel/analytics/react";
 import { LanguageProvider } from './context/LanguageContext';
 
 import UltimateGuidePrisbasbelopp from './pages/articles/2026/UltimateGuidePrisbasbelopp';
@@ -180,6 +181,7 @@ function App() {
     return (
         <LanguageProvider>
             <AppContent />
+            <Analytics />
         </LanguageProvider>
     );
 }

@@ -122,3 +122,38 @@ export const calculatePartTimeMatch = (netSalary, targetWorkRate) => {
         message: `Work ${targetWorkRate}%, take ${bestFit} S-days to match 100% income.`
     };
 };
+
+/**
+ * Algo 7: First Year Coverage Check
+ * Goal: Ensure at least one parent is home every weekday for the first 365 days.
+ */
+export const checkFirstYearCoverage = (childDob, allocatedDays) => {
+    if (!childDob || !allocatedDays) return { hasGap: false };
+
+    const dob = new Date(childDob);
+    const getYMD = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
+    for (let i = 0; i < 365; i++) {
+        const current = new Date(dob.getFullYear(), dob.getMonth(), dob.getDate() + i);
+        const dayOfWeek = current.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        if (!isWeekend) {
+            const ds = getYMD(current);
+            if (!allocatedDays[ds] || Object.keys(allocatedDays[ds]).length === 0) {
+                return {
+                    hasGap: true,
+                    firstGapDate: ds,
+                    message: "Barnet måste ha en förälder hemma hela första året"
+                };
+            }
+        }
+    }
+
+    return { hasGap: false };
+};
